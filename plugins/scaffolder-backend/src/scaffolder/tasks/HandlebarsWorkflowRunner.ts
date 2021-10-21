@@ -242,6 +242,7 @@ export class HandlebarsWorkflowRunner implements WorkflowRunner {
             output(name: string, value: JsonValue) {
               stepOutputs[name] = value;
             },
+            metadata: task.spec.metadata,
           });
 
           // Remove all temporary directories that were created when executing the action

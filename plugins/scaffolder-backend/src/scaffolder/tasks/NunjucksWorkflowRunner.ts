@@ -244,6 +244,7 @@ export class NunjucksWorkflowRunner implements WorkflowRunner {
             output(name: string, value: JsonValue) {
               stepOutput[name] = value;
             },
+            metadata: task.spec.metadata,
           });
 
           // Remove all temporary directories that were created when executing the action
