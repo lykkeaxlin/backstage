@@ -8,6 +8,7 @@
 import { BackstageTheme } from '@backstage/theme';
 import { ComponentType } from 'react';
 import { Config } from '@backstage/config';
+import { default as fetch_2 } from 'cross-fetch';
 import { Observable as Observable_2 } from '@backstage/types';
 import { Observer as Observer_2 } from '@backstage/types';
 import { default as React_2 } from 'react';
@@ -485,6 +486,12 @@ export enum FeatureFlagState {
   Active = 1,
   None = 0,
 }
+
+// @public
+export type FetchApi = typeof fetch_2;
+
+// @public
+export const fetchApiRef: ApiRef<FetchApi>;
 
 // @public
 export function getComponentData<T>(

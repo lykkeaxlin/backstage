@@ -257,6 +257,14 @@ export type BackstagePluginWithAnyOutput = Omit<
 };
 
 // @public
+export class BackstageProtocolResolverFetchMiddleware
+  implements FetchMiddleware
+{
+  constructor(discovery: (pluginId: string) => Promise<string>);
+  apply(next: FetchFunction): FetchFunction;
+}
+
+// @public
 export class BitbucketAuth {
   // (undocumented)
   static create({
@@ -433,6 +441,7 @@ export class GoogleAuth {
 
 // @public
 export class IdentityAwareFetchMiddleware implements FetchMiddleware {
+  constructor();
   apply(next: FetchFunction): FetchFunction;
   setHeaderName(name: string): IdentityAwareFetchMiddleware;
   setSignedIn(
