@@ -1,5 +1,14 @@
 # @backstage/techdocs-common
 
+## 0.10.6
+
+### Patch Changes
+
+- 6129c89a47: Default TechDocs container used at docs generation-time is now [v0.3.5](https://github.com/backstage/techdocs-container/releases/tag/v0.3.5).
+- f3c7eec64b: Updated to properly join URL segments under any OS for both AWS S3 and GCP
+- Updated dependencies
+  - @backstage/backend-common@0.9.9
+
 ## 0.10.5
 
 ### Patch Changes

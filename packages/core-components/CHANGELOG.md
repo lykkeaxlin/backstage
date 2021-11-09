@@ -1,5 +1,18 @@
 # @backstage/core-components
 
+## 0.7.3
+
+### Patch Changes
+
+- c11a37710a: Added a warning variant to `DismissableBanner` component. If you are using a
+  custom theme, you will need to add the optional `palette.banner.warning` color,
+  otherwise this variant will fall back to the `palette.banner.error` color.
+- 021986e8a3: fixed route resolving (issue #7741) when user cannot select a tab in any of the tabbed pages (like the Catalog page) if it shares the same initial letters as a preceding tab. (i.e. where tab with a path of /ci is followed by a path of /ci-2, user cannot select /ci-2 as /ci will always be selected first).
+- a39a2105ef: Add Theme Overrides for Sidebar
+- Updated dependencies
+  - @backstage/theme@0.2.13
+  - @backstage/core-plugin-api@0.1.13
+
 ## 0.7.2
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @backstage/plugin-azure-devops
 
+## 0.1.3
+
+### Patch Changes
+
+- 84ace9a29c: Simplified queue time calculation in `BuildTable`.
+- Updated dependencies
+  - @backstage/core-components@0.7.3
+  - @backstage/theme@0.2.13
+  - @backstage/plugin-catalog-react@0.6.3
+  - @backstage/core-plugin-api@0.1.13
+
 ## 0.1.2
 
 ### Patch Changes

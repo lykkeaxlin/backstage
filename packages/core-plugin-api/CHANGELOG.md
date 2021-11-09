@@ -1,5 +1,13 @@
 # @backstage/core-plugin-api
 
+## 0.1.13
+
+### Patch Changes
+
+- 8b4284cd5c: Improve API documentation for @backstage/core-plugin-api
+- Updated dependencies
+  - @backstage/theme@0.2.13
+
 ## 0.1.12
 
 ### Patch Changes

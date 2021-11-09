@@ -1,5 +1,15 @@
 # @backstage/cli
 
+## 0.8.2
+
+### Patch Changes
+
+- dd355bca46: Switched to dynamically determining the packages that are unsafe to repack when executing the CLI within the Backstage main repo.
+- 0611f3b3e2: Reading app config from a remote server
+- ec64d9590c: Make `ExitCodeError` call `super` early to avoid compiler warnings
+- Updated dependencies
+  - @backstage/config-loader@0.7.2
+
 ## 0.8.1
 
 ### Patch Changes
