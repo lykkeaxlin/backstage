@@ -28,9 +28,9 @@ import { bitbucketAuthApiRef } from '@backstage/core-plugin-api';
 import { ComponentType } from 'react';
 import { ConfigReader } from '@backstage/config';
 import { DiscoveryApi } from '@backstage/core-plugin-api';
-import { Error as Error_2 } from '@backstage/core-plugin-api';
 import { ErrorApi } from '@backstage/core-plugin-api';
-import { ErrorContext } from '@backstage/core-plugin-api';
+import { ErrorApiError } from '@backstage/core-plugin-api';
+import { ErrorApiErrorContext } from '@backstage/core-plugin-api';
 import { ExternalRouteRef } from '@backstage/core-plugin-api';
 import { FeatureFlag } from '@backstage/core-plugin-api';
 import { FeatureFlagsApi } from '@backstage/core-plugin-api';
@@ -45,6 +45,7 @@ import { Observable } from '@backstage/types';
 import { oktaAuthApiRef } from '@backstage/core-plugin-api';
 import { oneloginAuthApiRef } from '@backstage/core-plugin-api';
 import { OpenIdConnectApi } from '@backstage/core-plugin-api';
+import { OptionalAppOptions } from '@backstage/app-defaults';
 import { PendingAuthRequest } from '@backstage/core-plugin-api';
 import { PluginOutput } from '@backstage/core-plugin-api';
 import { ProfileInfo } from '@backstage/core-plugin-api';
@@ -94,7 +95,6 @@ export class ApiFactoryRegistry implements ApiFactoryHolder {
     | undefined;
   // (undocumented)
   getAllApis(): Set<AnyApiRef>;
-  // Warning: (ae-forgotten-export) The symbol "ApiFactoryScope" needs to be exported by the entry point index.d.ts
   register<
     Api,
     Impl extends Api,
@@ -103,6 +103,9 @@ export class ApiFactoryRegistry implements ApiFactoryHolder {
     },
   >(scope: ApiFactoryScope, factory: ApiFactory<Api, Impl, Deps>): boolean;
 }
+
+// @public
+export type ApiFactoryScope = 'default' | 'app' | 'static';
 
 // @public
 export const ApiProvider: {
@@ -115,6 +118,12 @@ export const ApiProvider: {
     >;
     children: PropTypes.Requireable<PropTypes.ReactNodeLike>;
   };
+};
+
+// @public
+export type ApiProviderProps = {
+  apis: ApiHolder;
+  children: ReactNode;
 };
 
 // @public
@@ -150,7 +159,7 @@ export type AppComponents = {
   Progress: ComponentType<{}>;
   Router: ComponentType<{}>;
   ErrorBoundaryFallback: ComponentType<ErrorBoundaryFallbackProps>;
-  ThemeProvider: ComponentType<{}>;
+  ThemeProvider?: ComponentType<{}>;
   SignInPage?: ComponentType<SignInPageProps>;
 };
 
@@ -165,22 +174,51 @@ export type AppContext = {
 };
 
 // @public
+export type AppIcons = {
+  'kind:api': IconComponent;
+  'kind:component': IconComponent;
+  'kind:domain': IconComponent;
+  'kind:group': IconComponent;
+  'kind:location': IconComponent;
+  'kind:system': IconComponent;
+  'kind:user': IconComponent;
+  brokenImage: IconComponent;
+  catalog: IconComponent;
+  chat: IconComponent;
+  dashboard: IconComponent;
+  docs: IconComponent;
+  email: IconComponent;
+  github: IconComponent;
+  group: IconComponent;
+  help: IconComponent;
+  scaffolder: IconComponent;
+  search: IconComponent;
+  techdocs: IconComponent;
+  user: IconComponent;
+  warning: IconComponent;
+};
+
+// @public
 export type AppOptions = {
   apis?: Iterable<AnyApiFactory>;
-  icons?: Partial<AppIcons> & {
+  defaultApis?: Iterable<AnyApiFactory>;
+  icons: AppIcons & {
     [key in string]: IconComponent;
   };
-  plugins?: BackstagePluginWithAnyOutput[];
-  components?: Partial<AppComponents>;
-  themes?: AppTheme[];
+  plugins?: (Omit<BackstagePlugin<any, any>, 'output'> & {
+    output(): (
+      | PluginOutput
+      | {
+          type: string;
+        }
+    )[];
+  })[];
+  components: AppComponents;
+  themes: (Partial<AppTheme> & Omit<AppTheme, 'theme'>)[];
   configLoader?: AppConfigLoader;
   bindRoutes?(context: { bind: AppRouteBinder }): void;
 };
 
-// Warning: (ae-forgotten-export) The symbol "PartialKeys" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "TargetRouteMap" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "KeysWithType" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type AppRouteBinder = <
   ExternalRoutes extends {
@@ -211,8 +249,6 @@ export class AppThemeSelector implements AppThemeApi {
 
 // @public
 export class AtlassianAuth {
-  // Warning: (ae-forgotten-export) The symbol "OAuthApiCreateOptions" needs to be exported by the entry point index.d.ts
-  //
   // (undocumented)
   static create({
     discoveryApi,
@@ -235,6 +271,15 @@ export class Auth0Auth {
 }
 
 // @public
+export type AuthApiCreateOptions = {
+  discoveryApi: DiscoveryApi;
+  environment?: string;
+  provider?: AuthProvider & {
+    id: string;
+  };
+};
+
+// @public
 export type BackstageApp = {
   getPlugins(): BackstagePlugin<any, any>[];
   getSystemIcon(key: string): IconComponent | undefined;
@@ -242,7 +287,7 @@ export type BackstageApp = {
   getRouter(): ComponentType<{}>;
 };
 
-// @public
+// @public @deprecated
 export type BackstagePluginWithAnyOutput = Omit<
   BackstagePlugin<any, any>,
   'output'
@@ -286,10 +331,11 @@ export type BootErrorPageProps = {
 
 export { ConfigReader };
 
-// Warning: (ae-forgotten-export) The symbol "PrivateAppImpl" needs to be exported by the entry point index.d.ts
-//
+// @public @deprecated
+export function createApp(options?: OptionalAppOptions): BackstageApp;
+
 // @public
-export function createApp(options?: AppOptions): PrivateAppImpl;
+export function createSpecializedApp(options: AppOptions): BackstageApp;
 
 // @public
 export const defaultConfigLoader: AppConfigLoader;
@@ -299,11 +345,11 @@ export class ErrorAlerter implements ErrorApi {
   constructor(alertApi: AlertApi, errorApi: ErrorApi);
   // (undocumented)
   error$(): Observable<{
-    error: Error_2;
-    context?: ErrorContext | undefined;
+    error: ErrorApiError;
+    context?: ErrorApiErrorContext | undefined;
   }>;
   // (undocumented)
-  post(error: Error, context?: ErrorContext): void;
+  post(error: ErrorApiError, context?: ErrorApiErrorContext): void;
 }
 
 // @public
@@ -311,10 +357,10 @@ export class ErrorApiForwarder implements ErrorApi {
   // (undocumented)
   error$(): Observable<{
     error: Error;
-    context?: ErrorContext;
+    context?: ErrorApiErrorContext;
   }>;
   // (undocumented)
-  post(error: Error, context?: ErrorContext): void;
+  post(error: ErrorApiError, context?: ErrorApiErrorContext): void;
 }
 
 // @public
@@ -350,6 +396,8 @@ export type FlatRoutesProps = {
 // @public
 export class GithubAuth implements OAuthApi, SessionApi {
   // Warning: (ae-forgotten-export) The symbol "SessionManager" needs to be exported by the entry point index.d.ts
+  //
+  // @deprecated
   constructor(sessionManager: SessionManager<GithubSession>);
   // (undocumented)
   static create({
@@ -451,12 +499,11 @@ export class OAuth2
     BackstageIdentityApi,
     SessionApi
 {
+  // @deprecated
   constructor(options: {
     sessionManager: SessionManager<OAuth2Session>;
     scopeTransform: (scopes: string[]) => string[];
   });
-  // Warning: (ae-forgotten-export) The symbol "CreateOptions" needs to be exported by the entry point index.d.ts
-  //
   // (undocumented)
   static create({
     discoveryApi,
@@ -465,7 +512,7 @@ export class OAuth2
     oauthRequestApi,
     defaultScopes,
     scopeTransform,
-  }: CreateOptions): OAuth2;
+  }: OAuth2CreateOptions): OAuth2;
   // (undocumented)
   getAccessToken(
     scope?: string | string[],
@@ -488,6 +535,11 @@ export class OAuth2
 }
 
 // @public
+export type OAuth2CreateOptions = OAuthApiCreateOptions & {
+  scopeTransform?: (scopes: string[]) => string[];
+};
+
+// @public
 export type OAuth2Session = {
   providerInfo: {
     idToken: string;
@@ -497,6 +549,12 @@ export type OAuth2Session = {
   };
   profile: ProfileInfo;
   backstageIdentity: BackstageIdentity;
+};
+
+// @public
+export type OAuthApiCreateOptions = AuthApiCreateOptions & {
+  oauthRequestApi: OAuthRequestApi;
+  defaultScopes?: string[];
 };
 
 // @public
@@ -521,25 +579,31 @@ export class OktaAuth {
 
 // @public
 export class OneLoginAuth {
-  // Warning: (ae-forgotten-export) The symbol "CreateOptions" needs to be exported by the entry point index.d.ts
-  //
   // (undocumented)
   static create({
     discoveryApi,
     environment,
     provider,
     oauthRequestApi,
-  }: CreateOptions_2): typeof oneloginAuthApiRef.T;
+  }: OneLoginAuthCreateOptions): typeof oneloginAuthApiRef.T;
 }
+
+// @public
+export type OneLoginAuthCreateOptions = {
+  discoveryApi: DiscoveryApi;
+  oauthRequestApi: OAuthRequestApi;
+  environment?: string;
+  provider?: AuthProvider & {
+    id: string;
+  };
+};
 
 // @public
 export class SamlAuth
   implements ProfileInfoApi, BackstageIdentityApi, SessionApi
 {
-  // Warning: (ae-forgotten-export) The symbol "SamlSession" needs to be exported by the entry point index.d.ts
+  // @deprecated
   constructor(sessionManager: SessionManager<SamlSession>);
-  // Warning: (ae-forgotten-export) The symbol "AuthApiCreateOptions" needs to be exported by the entry point index.d.ts
-  //
   // (undocumented)
   static create({
     discoveryApi,
@@ -561,6 +625,13 @@ export class SamlAuth
 }
 
 // @public
+export type SamlSession = {
+  userId: string;
+  profile: ProfileInfo;
+  backstageIdentity: BackstageIdentity;
+};
+
+// @public
 export type SignInPageProps = {
   onResult(result: SignInResult): void;
 };
@@ -575,7 +646,7 @@ export type SignInResult = {
 
 // @public
 export class UnhandledErrorForwarder {
-  static forward(errorApi: ErrorApi, errorContext: ErrorContext): void;
+  static forward(errorApi: ErrorApi, errorContext: ErrorApiErrorContext): void;
 }
 
 // @public
@@ -604,9 +675,4 @@ export class WebStorage implements StorageApi {
   // (undocumented)
   set<T>(key: string, data: T): Promise<void>;
 }
-
-// Warnings were encountered during analysis:
-//
-// src/apis/system/ApiProvider.d.ts:15:5 - (ae-forgotten-export) The symbol "ApiProviderProps" needs to be exported by the entry point index.d.ts
-// src/app/types.d.ts:152:5 - (ae-forgotten-export) The symbol "AppIcons" needs to be exported by the entry point index.d.ts
 ```

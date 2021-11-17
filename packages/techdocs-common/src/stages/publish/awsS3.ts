@@ -57,6 +57,29 @@ const streamToBuffer = (stream: Readable): Promise<Buffer> => {
 };
 
 export class AwsS3Publish implements PublisherBase {
+  private readonly storageClient: aws.S3;
+  private readonly bucketName: string;
+  private readonly legacyPathCasing: boolean;
+  private readonly logger: Logger;
+  private readonly bucketRootPath: string;
+  private readonly sse?: 'aws:kms' | 'AES256';
+
+  constructor(options: {
+    storageClient: aws.S3;
+    bucketName: string;
+    legacyPathCasing: boolean;
+    logger: Logger;
+    bucketRootPath: string;
+    sse?: 'aws:kms' | 'AES256';
+  }) {
+    this.storageClient = options.storageClient;
+    this.bucketName = options.bucketName;
+    this.legacyPathCasing = options.legacyPathCasing;
+    this.logger = options.logger;
+    this.bucketRootPath = options.bucketRootPath;
+    this.sse = options.sse;
+  }
+
   static fromConfig(config: Config, logger: Logger): PublisherBase {
     let bucketName = '';
     try {
@@ -71,6 +94,11 @@ export class AwsS3Publish implements PublisherBase {
     const bucketRootPath = normalizeExternalStorageRootPath(
       config.getOptionalString('techdocs.publisher.awsS3.bucketRootPath') || '',
     );
+
+    const sse = config.getOptionalString('techdocs.publisher.awsS3.sse') as
+      | 'aws:kms'
+      | 'AES256'
+      | undefined;
 
     // Credentials is an optional config. If missing, the default ways of authenticating AWS SDK V2 will be used.
     // 1. AWS environment variables
@@ -112,13 +140,14 @@ export class AwsS3Publish implements PublisherBase {
         'techdocs.legacyUseCaseSensitiveTripletPaths',
       ) || false;
 
-    return new AwsS3Publish(
+    return new AwsS3Publish({
       storageClient,
       bucketName,
+      bucketRootPath,
       legacyPathCasing,
       logger,
-      bucketRootPath,
-    );
+      sse,
+    });
   }
 
   private static buildCredentials(
@@ -150,20 +179,6 @@ export class AwsS3Publish implements PublisherBase {
     }
 
     return explicitCredentials;
-  }
-
-  constructor(
-    private readonly storageClient: aws.S3,
-    private readonly bucketName: string,
-    private readonly legacyPathCasing: boolean,
-    private readonly logger: Logger,
-    private readonly bucketRootPath: string,
-  ) {
-    this.storageClient = storageClient;
-    this.bucketName = bucketName;
-    this.legacyPathCasing = legacyPathCasing;
-    this.logger = logger;
-    this.bucketRootPath = bucketRootPath;
   }
 
   /**
@@ -202,6 +217,7 @@ export class AwsS3Publish implements PublisherBase {
   async publish({ entity, directory }: PublishRequest): Promise<void> {
     const useLegacyPathCasing = this.legacyPathCasing;
     const bucketRootPath = this.bucketRootPath;
+    const sse = this.sse;
 
     // First, try to retrieve a list of all individual files currently existing
     let existingFiles: string[] = [];
@@ -244,7 +260,8 @@ export class AwsS3Publish implements PublisherBase {
               bucketRootPath,
             ),
             Body: fileStream,
-          };
+            ...(sse && { ServerSideEncryption: sse }),
+          } as aws.S3.PutObjectRequest;
 
           return this.storageClient.upload(params).promise();
         },
