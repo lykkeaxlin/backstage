@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Backstage Authors
+ * Copyright 2021 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,5 @@
  * limitations under the License.
  */
 
-import { createRouter } from '@backstage/plugin-azure-devops-backend';
-import { Router } from 'express';
-import type { PluginEnvironment } from '../types';
-
-export default function createPlugin({
-  logger,
-  config,
-}: PluginEnvironment): Promise<Router> {
-  return createRouter({ logger, config });
-}
+export { ProxiedSignInPage } from './ProxiedSignInPage';
+export type { ProxiedSignInPageProps } from './ProxiedSignInPage';
