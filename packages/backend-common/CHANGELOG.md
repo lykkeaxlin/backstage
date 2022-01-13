@@ -1,5 +1,141 @@
 # @backstage/backend-common
 
+## 0.10.2
+
+### Patch Changes
+
+- 21ae56168e: Updated the Git class with the following:
+
+  - Added `depth` and `noCheckout` options to Git clone, using these you can create a bare clone that includes just the git history
+  - New `log` function which you can use to view the commit history of a git repo
+
+- eacc582473: Reverted the default CSP configuration to include `'unsafe-eval'` again, which was mistakenly removed in the previous version.
+
+## 0.10.1
+
+### Patch Changes
+
+- 94cdf5d1bd: In-memory cache clients instantiated from the same cache manager now share the same memory space.
+- 916b2f1f3e: Use the default CSP policy provided by `helmet` directly rather than a copy.
+- 7d4b4e937c: Uptake changes to the GitHub Credentials Provider interface.
+- 995e4c7d9d: Added support for non-"amazonaws.com" hosts (for example when testing with LocalStack) in AwsS3UrlReader.
+- Updated dependencies
+  - @backstage/integration@0.7.0
+  - @backstage/config-loader@0.9.1
+
+## 0.10.0
+
+### Minor Changes
+
+- 2f8a9b665f: Auto-generate secrets for backend-to-backend auth in local development environments.
+
+  When NODE_ENV is 'development', the ServerTokenManager will now generate a secret for backend-to-backend auth to make it simpler to work locally on Backstage instances that use backend-to-backend auth. For production deployments, a secret must still be manually configured as described in [the backend-to-backend auth tutorial](https://backstage.io/docs/tutorials/backend-to-backend-auth).
+
+  After the change, the static `fromConfig` method on the `ServerTokenManager` requires a logger.
+
+  ```diff
+  -  const tokenManager = ServerTokenManager.fromConfig(config);
+  +  const tokenManager = ServerTokenManager.fromConfig(config, { logger: root });
+  ```
+
+### Patch Changes
+
+- 776180b740: Fixed bug in backend-common to allow passing of remote option in order to enable passing remote url in --config option. The remote option should be passed along with reloadIntervalSeconds from packages/backend/src/index.ts (Updated the file as well)
+
+  These changes are needed in `packages/backend/src/index.ts` if remote URLs are desired to be passed in --config option and read and watch remote files for config.
+
+  ```diff
+  @@ -86,7 +86,11 @@ async function main() {
+     const config = await loadBackendConfig({
+       argv: process.argv,
+       logger,
+  +    remote: {
+  +      reloadIntervalSeconds: 60 * 10 // Check remote config changes every 10 minutes. Change to your desired interval in seconds
+  +    }
+     });
+  +
+     const createEnv = makeCreateEnv(config);
+
+     const healthcheckEnv = useHotMemoize(module, () => createEnv('healthcheck'));
+  ```
+
+- 2462b9e275: Ensure temporary directories are cleaned up if an error is thrown in the `filter` callback of the `UrlReader.readTree` options.
+- 2f6d8ec3b6: Updated the `ReadTreeResponse` documentation to clarify that the caller of `dir()` is responsible for removing the directory after use.
+- Updated dependencies
+  - @backstage/config-loader@0.9.0
+
+## 0.9.14
+
+### Patch Changes
+
+- fe24bc9a32: Each plugin now saves to a separate sqlite database file when `connection.filename` is provided in the sqlite config.
+  Any existing sqlite database files will be ignored.
+
+## 0.9.13
+
+### Patch Changes
+
+- dcd1a0c3f4: Minor improvement to the API reports, by not unpacking arguments directly
+- 5a008576c4: Add possibility to use custom error handler
+- 98a9c35f0c: Add options argument to support additional database migrations configuration
+- 6298de32dd: Add knexConfig config section
+
+## 0.9.12
+
+### Patch Changes
+
+- 905dd952ac: Create a `TokenManager` interface and `ServerTokenManager` implementation to generate and validate server tokens for authenticated backend-to-backend API requests.
+- 6b500622d5: Move to using node-fetch internally instead of cross-fetch
+- 54989b671d: Fixed a potential crash in the log redaction code
+- Updated dependencies
+  - @backstage/integration@0.6.10
+  - @backstage/config-loader@0.8.1
+
+## 0.9.11
+
+### Patch Changes
+
+- bab752e2b3: Change default port of backend from 7000 to 7007.
+
+  This is due to the AirPlay Receiver process occupying port 7000 and preventing local Backstage instances on MacOS to start.
+
+  You can change the port back to 7000 or any other value by providing an `app-config.yaml` with the following values:
+
+  ```
+  backend:
+    listen: 0.0.0.0:7123
+    baseUrl: http://localhost:7123
+  ```
+
+  More information can be found here: https://backstage.io/docs/conf/writing
+
+- Updated dependencies
+  - @backstage/errors@0.1.5
+
+## 0.9.10
+
+### Patch Changes
+
+- d7c1e0e34a: Added the `isDatabaseConflictError` function.
+- e21e3c6102: Bumping minimum requirements for `dockerode` and `testcontainers`
+- 1e99c73c75: Update internal usage of `configLoader.loadConfig` that now returns an object instead of an array of configs.
+- 1daada3a06: Paths can be specified in backend.reading.allow to further restrict allowed targets
+- 7ad9a07b27: Adding config prop `pluginDivisionMode` to allow plugins using the `pg` client to create their own management schemas in the db. This allows `pg` client plugins to work in separate schemas in the same db.
+- 01f74aa878: Add `AbortSignal` support to `UrlReader`
+- a8732a1200: Make sure that server builder `start()` propagates errors (such as failing to bind to the required port) properly and doesn't resolve the promise prematurely.
+
+  After this change, the backend logger will be able to actually capture the error as it happens:
+
+  ```
+  2021-11-11T10:54:21.334Z backstage info Initializing http server
+  2021-11-11T10:54:21.335Z backstage error listen EADDRINUSE: address already in use :::7000 code=EADDRINUSE errno=-48 syscall=listen address=:: port=7000
+  ```
+
+- 26b5da1c1a: Do not redact empty or one-character strings. These imply that it's just a test or local dev, and unnecessarily ruin the log output.
+- Updated dependencies
+  - @backstage/config-loader@0.8.0
+  - @backstage/cli-common@0.1.6
+
 ## 0.9.9
 
 ### Patch Changes

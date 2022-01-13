@@ -55,10 +55,11 @@ learn how to contribute the integration yourself!
 The following table summarizes events that, depending on the plugins you have
 installed, may be captured.
 
-| Action     | Provided By    | Subject                                   |
-| ---------- | -------------- | ----------------------------------------- |
-| `navigate` | Backstage Core | The URL of the page that was navigated to |
-| `click`    | Backstage Core | The text of the link that was clicked on  |
+| Action     | Provided By    | Subject                                             |
+| ---------- | -------------- | --------------------------------------------------- |
+| `navigate` | Backstage Core | The URL of the page that was navigated to           |
+| `click`    | Backstage Core | The text of the link that was clicked on            |
+| `search`   | Backstage Core | The search term entered in any search bar component |
 
 If there is an event you'd like to see captured, please [open an
 issue][add-event] describing the event you want to see and the questions it
@@ -261,10 +262,13 @@ analytics events captured.
 Use it like this:
 
 ```tsx
-import { ApiProvider, ApiRegistry } from '@backstage/core-app-api';
-import { analyticsApiRef } from '@backstage/core-plugin-api';
-import { MockAnalyticsApi, wrapInTestApp } from '@backstage/test-utils';
 import { render, fireEvent, waitFor } from '@testing-library/react';
+import { analyticsApiRef } from '@backstage/core-plugin-api';
+import {
+  MockAnalyticsApi,
+  TestApiProvider,
+  wrapInTestApp,
+} from '@backstage/test-utils';
 
 describe('SomeComponent', () => {
   it('should capture event on click', () => {
@@ -274,9 +278,9 @@ describe('SomeComponent', () => {
     // Render the component being tested
     const { getByText } = render(
       wrapInTestApp(
-        <ApiProvider apis={ApiRegistry.from([[analyticsApiRef, apiSpy]])}>
+        <TestApiProvider apis={[[analyticsApiRef, apiSpy]]}>
           <SomeComponentUnderTest />
-        </ApiProvider>,
+        </TestApiProvider>,
       ),
     );
 

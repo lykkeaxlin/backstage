@@ -1,5 +1,104 @@
 # @backstage/plugin-search
 
+## 0.5.4
+
+### Patch Changes
+
+- e05b9115aa: Fix missing search context issue with `HomePageSearchBar`
+- 4ce51ab0f1: Internal refactor of the `react-use` imports to use `react-use/lib/*` instead.
+- 54ef743aa4: Introduce a `<SearchType.Tabs />` variant to display tabs for selecting search result types.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.1
+  - @backstage/plugin-catalog-react@0.6.10
+  - @backstage/core-components@0.8.3
+
+## 0.5.3
+
+### Patch Changes
+
+- 6d8e3a9651: Internal cleanup of the exports structure
+- 8b532a6c02: Introduces a `<SearchType.Accordion />` variant, which operates on the same part of a search query as the existing `<SearchType />`, but in a more opinionated way (as a single-select control surface suitable for faceted search UIs).
+
+  Check the [search plugin storybook](https://backstage.io/storybook/?path=/story/plugins-search-searchtype--accordion) to see how it can be used.
+
+- af4980fb5d: Captures the search term entered in the SearchBarBase as a `search` event.
+- Updated dependencies
+  - @backstage/plugin-catalog-react@0.6.9
+
+## 0.5.2
+
+### Patch Changes
+
+- 3d98955c8a: Add Optional Props to Override Icon for SidebarSearch and SidebarSearchModal Component
+- 49a696d720: Standardizes the component used as a search box in the search modal and in the composable home page.
+
+  After these changes, all search boxes exported by the search plugin are based on the `<SearchBarBase />` component, and this one is based on the `<InputBase />` component of the Material UI. This means that when you use SearchBarBase or one of its derived components (like `SearchBar` and `HomePageSearchBar`) you can pass all properties accepted by InputBase that have not been replaced by the props type of those components.
+
+  For example:
+
+  ```jsx
+  <SearchInputBase color="secondary" debouceTime={500} />
+  ```
+
+  The `color` property is inherited from `InputBaseProps` type and `debouceTime` defined by `SearchBarBaseProps`.
+
+- 7a4bd2ceac: Prefer using `Link` from `@backstage/core-components` rather than material-UI.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.0
+  - @backstage/plugin-catalog-react@0.6.8
+  - @backstage/core-components@0.8.2
+
+## 0.5.1
+
+### Patch Changes
+
+- cd450844f6: Moved React dependencies to `peerDependencies` and allow both React v16 and v17 to be used.
+- 382e3a94b3: Export SearchApi interface from plugin
+- Updated dependencies
+  - @backstage/core-components@0.8.0
+  - @backstage/core-plugin-api@0.3.0
+  - @backstage/plugin-catalog-react@0.6.5
+
+## 0.5.0
+
+### Minor Changes
+
+- c5b6045f36: Search Modal now relies on the Search Context to access state and state setter. If you use the SidebarSearchModal as described in the [getting started documentation](https://backstage.io/docs/features/search/getting-started#using-the-search-modal), make sure to update your code with the SearchContextProvider.
+
+  ```diff
+  export const Root = ({ children }: PropsWithChildren<{}>) => (
+    <SidebarPage>
+      <Sidebar>
+        <SidebarLogo />
+  -     <SidebarSearchModal />
+  +     <SearchContextProvider>
+  +       <SidebarSearchModal />
+  +     </SearchContextProvider>
+        <SidebarDivider />
+      ...
+  ```
+
+### Patch Changes
+
+- f06ecd09a7: Add optional icon and secondaryAction properties for DefaultResultListItem component
+- c5941d5c30: Add a new optional clearButton property to the SearchBar component. The default value for this new property is true.
+- Updated dependencies
+  - @backstage/core-components@0.7.6
+  - @backstage/theme@0.2.14
+  - @backstage/core-plugin-api@0.2.2
+
+## 0.4.18
+
+### Patch Changes
+
+- a125278b81: Refactor out the deprecated path and icon from RouteRefs
+- 704b267e1c: Smaller UX improvements to search components such as optional autoFocus prop to SearchBar components, decreased debounce value and closing modal on link click of SearchModal, terminology updates of SearchResultPager.
+- Updated dependencies
+  - @backstage/catalog-model@0.9.7
+  - @backstage/plugin-catalog-react@0.6.4
+  - @backstage/core-components@0.7.4
+  - @backstage/core-plugin-api@0.2.0
+
 ## 0.4.17
 
 ### Patch Changes

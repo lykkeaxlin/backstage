@@ -1,5 +1,60 @@
 # @backstage/dev-utils
 
+## 0.2.16
+
+### Patch Changes
+
+- 4ce51ab0f1: Internal refactor of the `react-use` imports to use `react-use/lib/*` instead.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.1
+  - @backstage/plugin-catalog-react@0.6.10
+  - @backstage/core-app-api@0.3.1
+  - @backstage/core-components@0.8.3
+
+## 0.2.15
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/app-defaults@0.1.3
+  - @backstage/core-app-api@0.3.0
+  - @backstage/core-plugin-api@0.4.0
+  - @backstage/plugin-catalog-react@0.6.8
+  - @backstage/core-components@0.8.2
+  - @backstage/test-utils@0.2.0
+  - @backstage/integration-react@0.1.16
+
+## 0.2.14
+
+### Patch Changes
+
+- cd450844f6: Moved React dependencies to `peerDependencies` and allow both React v16 and v17 to be used.
+- dcd1a0c3f4: Minor improvement to the API reports, by not unpacking arguments directly
+- Updated dependencies
+  - @backstage/core-components@0.8.0
+  - @backstage/core-plugin-api@0.3.0
+  - @backstage/core-app-api@0.2.0
+  - @backstage/app-defaults@0.1.2
+  - @backstage/integration-react@0.1.15
+  - @backstage/test-utils@0.1.24
+  - @backstage/plugin-catalog-react@0.6.5
+
+## 0.2.13
+
+### Patch Changes
+
+- 58a4e67ded: Add theme switcher to sidebar of dev app.
+- 014cbf8cb9: Migrated to using `@backstage/app-defaults`.
+- Updated dependencies
+  - @backstage/catalog-model@0.9.7
+  - @backstage/plugin-catalog-react@0.6.4
+  - @backstage/core-components@0.7.4
+  - @backstage/core-plugin-api@0.2.0
+  - @backstage/core-app-api@0.1.21
+  - @backstage/test-utils@0.1.22
+  - @backstage/app-defaults@0.1.1
+  - @backstage/integration-react@0.1.14
+
 ## 0.2.12
 
 ### Patch Changes

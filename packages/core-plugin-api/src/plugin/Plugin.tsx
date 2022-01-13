@@ -16,11 +16,11 @@
 
 import {
   PluginConfig,
-  PluginOutput,
   BackstagePlugin,
   Extension,
   AnyRoutes,
   AnyExternalRoutes,
+  PluginFeatureFlagConfig,
 } from './types';
 import { AnyApiFactory } from '../apis';
 
@@ -32,8 +32,6 @@ export class PluginImpl<
   ExternalRoutes extends AnyExternalRoutes,
 > implements BackstagePlugin<Routes, ExternalRoutes>
 {
-  private storedOutput?: PluginOutput[];
-
   constructor(private readonly config: PluginConfig<Routes, ExternalRoutes>) {}
 
   getId(): string {
@@ -44,34 +42,16 @@ export class PluginImpl<
     return this.config.apis ?? [];
   }
 
+  getFeatureFlags(): Iterable<PluginFeatureFlagConfig> {
+    return this.config.featureFlags?.slice() ?? [];
+  }
+
   get routes(): Routes {
     return this.config.routes ?? ({} as Routes);
   }
 
   get externalRoutes(): ExternalRoutes {
     return this.config.externalRoutes ?? ({} as ExternalRoutes);
-  }
-
-  output(): PluginOutput[] {
-    if (this.storedOutput) {
-      return this.storedOutput;
-    }
-    if (!this.config.register) {
-      return [];
-    }
-
-    const outputs = new Array<PluginOutput>();
-
-    this.config.register({
-      featureFlags: {
-        register(name) {
-          outputs.push({ type: 'feature-flag', name });
-        },
-      },
-    });
-
-    this.storedOutput = outputs;
-    return this.storedOutput;
   }
 
   provide<T>(extension: Extension<T>): T {

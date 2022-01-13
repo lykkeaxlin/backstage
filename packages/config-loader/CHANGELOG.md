@@ -1,5 +1,50 @@
 # @backstage/config-loader
 
+## 0.9.1
+
+### Patch Changes
+
+- 84663d59a3: Bump `typescript-json-schema` from `^0.51.0` to `^0.52.0`.
+
+## 0.9.0
+
+### Minor Changes
+
+- f6722d2458: Removed deprecated option `env` from `LoadConfigOptions` and associated tests
+- 67d6cb3c7e: Removed deprecated option `configPaths` as it has been superseded by `configTargets`
+
+### Patch Changes
+
+- 1e7070443d: In case remote.reloadIntervalSeconds is passed, it must be a valid positive value
+
+## 0.8.1
+
+### Patch Changes
+
+- b055a6addc: Align on usage of `cross-fetch` vs `node-fetch` in frontend vs backend packages, and remove some unnecessary imports of either one of them
+- 4bea7b81d3: Uses key visibility as fallback in non-object arrays
+
+## 0.8.0
+
+### Minor Changes
+
+- 1e99c73c75: Update `loadConfig` to return `LoadConfigResult` instead of an array of `AppConfig`.
+
+  This function is primarily used internally by other config loaders like `loadBackendConfig` which means no changes are required for most users.
+
+  If you use `loadConfig` directly you will need to update your usage from:
+
+  ```diff
+  - const appConfigs = await loadConfig(options)
+  + const { appConfigs } = await loadConfig(options)
+  ```
+
+### Patch Changes
+
+- 8809b6c0dd: Update the json-schema dependency version.
+- Updated dependencies
+  - @backstage/cli-common@0.1.6
+
 ## 0.7.2
 
 ### Patch Changes

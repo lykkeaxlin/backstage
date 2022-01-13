@@ -17,6 +17,8 @@
 import fs from 'fs-extra';
 import chalk from 'chalk';
 import semver from 'semver';
+import minimatch from 'minimatch';
+import { Command } from 'commander';
 import { isError } from '@backstage/errors';
 import { resolve as resolvePath } from 'path';
 import { run } from '../../lib/run';
@@ -26,7 +28,8 @@ import {
   fetchPackageInfo,
   Lockfile,
 } from '../../lib/versioning';
-import { includedFilter, forbiddenDuplicatesFilter } from './lint';
+import { forbiddenDuplicatesFilter } from './lint';
+import { BACKSTAGE_JSON } from '@backstage/cli-common';
 
 const DEP_TYPES = [
   'dependencies',
@@ -35,6 +38,8 @@ const DEP_TYPES = [
   'optionalDependencies',
 ];
 
+const DEFAULT_PATTERN_GLOB = '@backstage/*';
+
 type PkgVersionInfo = {
   range: string;
   target: string;
@@ -42,14 +47,22 @@ type PkgVersionInfo = {
   location: string;
 };
 
-export default async () => {
+export default async (cmd: Command) => {
   const lockfilePath = paths.resolveTargetRoot('yarn.lock');
   const lockfile = await Lockfile.load(lockfilePath);
+  let pattern = cmd.pattern;
+
+  if (!pattern) {
+    console.log(`Using default pattern glob ${DEFAULT_PATTERN_GLOB}`);
+    pattern = DEFAULT_PATTERN_GLOB;
+  } else {
+    console.log(`Using custom pattern glob ${pattern}`);
+  }
 
   const findTargetVersion = createVersionFinder();
 
   // First we discover all Backstage dependencies within our own repo
-  const dependencyMap = await mapDependencies(paths.targetDir);
+  const dependencyMap = await mapDependencies(paths.targetDir, pattern);
 
   // Next check with the package registry to see which dependency ranges we need to bump
   const versionBumps = new Map<string, PkgVersionInfo[]>();
@@ -87,10 +100,12 @@ export default async () => {
     }
   });
 
+  const filter = (name: string) => minimatch(name, pattern);
+
   // Check for updates of transitive backstage dependencies
   await workerThreads(16, lockfile.keys(), async name => {
     // Only check @backstage packages and friends, we don't want this to do a full update of all deps
-    if (!includedFilter(name)) {
+    if (!filter(name)) {
       return;
     }
 
@@ -183,6 +198,10 @@ export default async () => {
     });
 
     console.log();
+
+    await bumpBackstageJsonVersion();
+
+    console.log();
     console.log(
       `Running ${chalk.blue('yarn install')} to install new versions`,
     );
@@ -232,7 +251,7 @@ export default async () => {
   // Finally we make sure the new lockfile doesn't have any duplicates
   const dedupLockfile = await Lockfile.load(lockfilePath);
   const result = dedupLockfile.analyze({
-    filter: includedFilter,
+    filter,
   });
 
   if (result.newVersions.length > 0) {
@@ -269,6 +288,41 @@ function createVersionFinder() {
     found.set(name, latest);
     return latest;
   };
+}
+
+export async function bumpBackstageJsonVersion() {
+  const backstageJsonPath = paths.resolveTargetRoot(BACKSTAGE_JSON);
+  const backstageJson = await fs.readJSON(backstageJsonPath).catch(e => {
+    if (e.code === 'ENOENT') {
+      // gracefully continue in case the file doesn't exist
+      return;
+    }
+    throw e;
+  });
+
+  const info = await fetchPackageInfo('@backstage/create-app');
+  const { latest } = info['dist-tags'];
+
+  if (backstageJson?.version === latest) {
+    return;
+  }
+
+  console.log(
+    chalk.yellow(
+      typeof backstageJson === 'undefined'
+        ? `Creating ${BACKSTAGE_JSON}`
+        : `Bumping version in ${BACKSTAGE_JSON}`,
+    ),
+  );
+
+  await fs.writeJson(
+    backstageJsonPath,
+    { ...backstageJson, version: latest },
+    {
+      spaces: 2,
+      encoding: 'utf8',
+    },
+  );
 }
 
 async function workerThreads<T>(

@@ -21,7 +21,7 @@ To support Azure authentication, you must create an App Registration:
 4. Register an application
    - Name: Backstage (or your custom app name)
    - Redirect URI: Web >
-     `http://localhost:7000/api/auth/microsoft/handler/frame`
+     `http://localhost:7007/api/auth/microsoft/handler/frame`
 5. Navigate to **Certificates & secrets > New client secret** to create a secret
 
 ## Configuration
@@ -48,6 +48,6 @@ The Microsoft provider is a structure with three configuration keys:
 
 ## Adding the provider to the Backstage frontend
 
-To add the provider to the frontend, add the `microsoftAuthApi` reference and
+To add the provider to the frontend, add the `microsoftAuthApiRef` reference and
 `SignInPage` component as shown in
 [Adding the provider to the sign-in page](../index.md#adding-the-provider-to-the-sign-in-page).

@@ -25,6 +25,7 @@ import { Entity, EntityRelationSpec } from '@backstage/catalog-model';
 export type EntityFilter =
   | { allOf: EntityFilter[] }
   | { anyOf: EntityFilter[] }
+  | { not: EntityFilter }
   | EntitiesSearchFilter;
 
 /**
@@ -50,16 +51,10 @@ export type EntitiesSearchFilter = {
   /**
    * Match on plain equality of values.
    *
-   * If undefined, this factor is not taken into account. Otherwise, match on
-   * values that are equal to any of the given array items. Matches are always
-   * case insensitive.
+   * Match on values that are equal to any of the given array items. Matches are
+   * always case insensitive.
    */
-  matchValueIn?: string[];
-
-  /**
-   * Match on existence of key.
-   */
-  matchValueExists?: boolean;
+  values?: string[];
 };
 
 export type PageInfo =
@@ -122,12 +117,7 @@ export type EntitiesCatalog = {
   /**
    * Writes a number of entities efficiently to storage.
    *
-   * @deprecated This method was part of the legacy catalog engine an will be removed.
-   *
-   * @param requests - The entities and their relations
-   * @param options.locationId - The location that they all belong to (default none)
-   * @param options.dryRun - Whether to throw away the results (default false)
-   * @param options.outputEntities - Whether to return the resulting entities (default false)
+   * @deprecated This method was part of the legacy catalog engine and will be removed.
    */
   batchAddOrUpdateEntities?(
     requests: EntityUpsertRequest[],

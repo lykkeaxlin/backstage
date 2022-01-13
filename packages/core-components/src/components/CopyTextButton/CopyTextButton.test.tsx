@@ -15,13 +15,11 @@
  */
 
 import React from 'react';
-import { fireEvent } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
-import { renderInTestApp } from '@backstage/test-utils';
+import { act, fireEvent } from '@testing-library/react';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { CopyTextButton } from './CopyTextButton';
-import { ApiProvider, ApiRegistry } from '@backstage/core-app-api';
-import { errorApiRef, ErrorApi } from '@backstage/core-plugin-api';
-import { useCopyToClipboard } from 'react-use';
+import { errorApiRef } from '@backstage/core-plugin-api';
+import useCopyToClipboard from 'react-use/lib/useCopyToClipboard';
 
 jest.mock('popper.js', () => {
   const PopperJS = jest.requireActual('popper.js');
@@ -34,14 +32,12 @@ jest.mock('popper.js', () => {
   };
 });
 
-jest.mock('react-use', () => {
-  const original = jest.requireActual('react-use');
+jest.mock('react-use/lib/useCopyToClipboard', () => {
+  const original = jest.requireActual('react-use/lib/useCopyToClipboard');
 
   return {
-    ...original,
-    useCopyToClipboard: jest
-      .fn()
-      .mockImplementation(original.useCopyToClipboard),
+    __esModule: true,
+    default: jest.fn().mockImplementation(original.default),
   };
 });
 
@@ -51,22 +47,18 @@ const props = {
   tooltipText: 'mockTooltip',
 };
 
-const apiRegistry = ApiRegistry.from([
-  [
-    errorApiRef,
-    {
-      post: jest.fn(),
-      error$: jest.fn(),
-    } as ErrorApi,
-  ],
-]);
+const mockErrorApi = {
+  post: jest.fn(),
+  error$: jest.fn(),
+};
+const apis = [[errorApiRef, mockErrorApi] as const] as const;
 
 describe('<CopyTextButton />', () => {
   it('renders without exploding', async () => {
     const { getByTitle, queryByText } = await renderInTestApp(
-      <ApiProvider apis={apiRegistry}>
+      <TestApiProvider apis={apis}>
         <CopyTextButton {...props} />
-      </ApiProvider>,
+      </TestApiProvider>,
     );
     expect(getByTitle('mockTooltip')).toBeInTheDocument();
     expect(queryByText('mockTooltip')).not.toBeInTheDocument();
@@ -80,9 +72,9 @@ describe('<CopyTextButton />', () => {
     spy.mockReturnValue([{}, copy]);
 
     const rendered = await renderInTestApp(
-      <ApiProvider apis={apiRegistry}>
+      <TestApiProvider apis={apis}>
         <CopyTextButton {...props} />
-      </ApiProvider>,
+      </TestApiProvider>,
     );
     const button = rendered.getByTitle('mockTooltip');
     fireEvent.click(button);
@@ -101,10 +93,10 @@ describe('<CopyTextButton />', () => {
     spy.mockReturnValue([{ error }, jest.fn()]);
 
     await renderInTestApp(
-      <ApiProvider apis={apiRegistry}>
+      <TestApiProvider apis={apis}>
         <CopyTextButton {...props} />
-      </ApiProvider>,
+      </TestApiProvider>,
     );
-    expect(apiRegistry.get(errorApiRef)?.post).toHaveBeenCalledWith(error);
+    expect(mockErrorApi.post).toHaveBeenCalledWith(error);
   });
 });

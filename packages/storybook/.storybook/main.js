@@ -8,6 +8,7 @@ const BACKSTAGE_CORE_STORIES = [
   'packages/core-components',
   'plugins/org',
   'plugins/search',
+  'plugins/home',
 ];
 
 module.exports = ({ args }) => {
@@ -59,7 +60,7 @@ module.exports = ({ args }) => {
           },
         },
         {
-          test: /\.(jsx?|mjs)$/,
+          test: /\.(jsx?|mjs|cjs)$/,
           exclude: /node_modules/,
           loader: require.resolve('@sucrase/webpack-loader'),
           options: {

@@ -1,5 +1,43 @@
 # @backstage/plugin-rollbar-backend
 
+## 0.1.18
+
+### Patch Changes
+
+- 152bd9ba2b: Moved `@backstage/test-utils` to `devDependencies`.
+- c5e175cde9: Replace the usage of `axios` with `node-fetch` in the Rollbar API
+- Updated dependencies
+  - @backstage/backend-common@0.10.1
+
+## 0.1.17
+
+### Patch Changes
+
+- 58d07a070c: Bump `axios`
+- Updated dependencies
+  - @backstage/backend-common@0.10.0
+
+## 0.1.16
+
+### Patch Changes
+
+- bab752e2b3: Change default port of backend from 7000 to 7007.
+
+  This is due to the AirPlay Receiver process occupying port 7000 and preventing local Backstage instances on MacOS to start.
+
+  You can change the port back to 7000 or any other value by providing an `app-config.yaml` with the following values:
+
+  ```
+  backend:
+    listen: 0.0.0.0:7123
+    baseUrl: http://localhost:7123
+  ```
+
+  More information can be found here: https://backstage.io/docs/conf/writing
+
+- Updated dependencies
+  - @backstage/backend-common@0.9.11
+
 ## 0.1.15
 
 ### Patch Changes

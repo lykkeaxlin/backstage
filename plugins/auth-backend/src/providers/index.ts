@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
+export * from './atlassian';
+export * from './auth0';
+export * from './aws-alb';
+export * from './bitbucket';
 export * from './github';
 export * from './gitlab';
 export * from './google';
 export * from './microsoft';
 export * from './oauth2';
+export * from './oidc';
 export * from './okta';
-export * from './bitbucket';
-export * from './atlassian';
-export * from './aws-alb';
+export * from './onelogin';
+export * from './saml';
+export * from './gcp-iap';
 
 export { factories as defaultAuthProviderFactories } from './factories';
 
@@ -32,8 +37,21 @@ export type {
   AuthProviderRouteHandlers,
   AuthProviderFactoryOptions,
   AuthProviderFactory,
+  AuthHandler,
+  AuthHandlerResult,
+  SignInResolver,
+  SignInInfo,
 } from './types';
 
 // These types are needed for a postMessage from the login pop-up
 // to the frontend
-export type { AuthResponse, BackstageIdentity, ProfileInfo } from './types';
+export type {
+  AuthResponse,
+  BackstageIdentity,
+  BackstageUserIdentity,
+  BackstageIdentityResponse,
+  BackstageSignInResult,
+  ProfileInfo,
+} from './types';
+
+export { prepareBackstageIdentityResponse } from './prepareBackstageIdentityResponse';

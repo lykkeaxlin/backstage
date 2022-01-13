@@ -1,5 +1,87 @@
 # @backstage/plugin-scaffolder-backend
 
+## 0.15.19
+
+### Patch Changes
+
+- 7d4b4e937c: Uptake changes to the GitHub Credentials Provider interface.
+- d078377f67: Support navigating back to pre-filled templates to update inputs of scaffolder tasks for resubmission
+- 5f8ceba1b1: Support custom file name for `catalog:write` action
+- Updated dependencies
+  - @backstage/backend-common@0.10.1
+  - @backstage/plugin-catalog-backend@0.19.4
+  - @backstage/plugin-scaffolder-common@0.1.2
+  - @backstage/integration@0.7.0
+  - @backstage/plugin-scaffolder-backend-module-cookiecutter@0.1.7
+
+## 0.15.18
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/backend-common@0.10.0
+  - @backstage/catalog-client@0.5.3
+  - @backstage/plugin-catalog-backend@0.19.3
+  - @backstage/plugin-scaffolder-backend-module-cookiecutter@0.1.6
+
+## 0.15.17
+
+### Patch Changes
+
+- eec0750d8d: Makes cookiecutter a default, but optional action based on if a containerRunner argument is passed in to createRouter or createBuiltinActions
+- ed52f74ab3: Adding changes to create GitLab Merge Request using custom action
+- Updated dependencies
+  - @backstage/plugin-catalog-backend@0.19.2
+  - @backstage/backend-common@0.9.14
+  - @backstage/catalog-model@0.9.8
+
+## 0.15.16
+
+### Patch Changes
+
+- 2a3fb13718: Bump esbuild to ^0.14.1
+- Updated dependencies
+  - @backstage/backend-common@0.9.13
+  - @backstage/plugin-catalog-backend@0.19.1
+
+## 0.15.15
+
+### Patch Changes
+
+- 0398ea25d3: Removed unused scaffolder visibility configuration; this has been moved to publish actions. Deprecated scaffolder provider configuration keys; these should use the integrations configuration instead.
+- b055a6addc: Align on usage of `cross-fetch` vs `node-fetch` in frontend vs backend packages, and remove some unnecessary imports of either one of them
+- c6b44d80ad: Add options to spawn in runCommand helper
+- Updated dependencies
+  - @backstage/integration@0.6.10
+  - @backstage/plugin-catalog-backend@0.19.0
+  - @backstage/plugin-scaffolder-backend-module-cookiecutter@0.1.5
+  - @backstage/backend-common@0.9.12
+
+## 0.15.14
+
+### Patch Changes
+
+- a096e4c4d7: Switched to executing scaffolder templating in a secure context for any template based on nunjucks, as it is [not secure by default](https://mozilla.github.io/nunjucks/api.html#user-defined-templates-warning).
+- f9352ab606: Removed all usages of `path.resolve` in order to ensure that template paths are resolved in a safe way.
+- e634a47ce5: Fix bug where there was error log lines written when failing to `JSON.parse` things that were not `JSON` values.
+- 42ebbc18c0: Bump gitbeaker to the latest version
+- Updated dependencies
+  - @backstage/errors@0.1.5
+  - @backstage/plugin-catalog-backend@0.18.0
+  - @backstage/backend-common@0.9.11
+
+## 0.15.13
+
+### Patch Changes
+
+- 26eb174ce8: Skip empty file names when scaffolding with nunjucks
+- ecdcbd08ee: Expose template metadata to custom action handler in Scaffolder.
+- Updated dependencies
+  - @backstage/catalog-client@0.5.2
+  - @backstage/catalog-model@0.9.7
+  - @backstage/backend-common@0.9.10
+  - @backstage/plugin-catalog-backend@0.17.4
+
 ## 0.15.12
 
 ### Patch Changes

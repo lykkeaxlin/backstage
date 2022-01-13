@@ -1,5 +1,29 @@
 # @backstage/integration
 
+## 0.7.0
+
+### Minor Changes
+
+- 7d4b4e937c: Create an interface for the GitHub credentials provider in order to support providing implementations.
+
+  We have changed the name of the `GithubCredentialsProvider` to `SingleInstanceGithubCredentialsProvider`.
+
+  `GithubCredentialsProvider` is now an interface that maybe implemented to provide a custom mechanism to retrieve GitHub credentials.
+
+  In a later release we will support configuring URL readers, scaffolder tasks, and processors with customer GitHub credentials providers.
+
+  If you want to uptake this release, you will need to replace all references to `GithubCredentialsProvider.create` with `SingleInstanceGithubCredentialsProvider.create`.
+
+### Patch Changes
+
+- cf2e20a792: Added `endpoint` and `s3ForcePathStyle` as optional configuration for AWS S3 integrations.
+
+## 0.6.10
+
+### Patch Changes
+
+- 47619da24c: Narrow the types returned by the request option functions, to only the specifics that they actually do return. The reason for this change is that a full `RequestInit` is unfortunate to return because it's different between `cross-fetch` and `node-fetch`.
+
 ## 0.6.9
 
 ### Patch Changes

@@ -9,6 +9,7 @@ import { ApiRef } from '@backstage/core-plugin-api';
 import { BackstageIdentityApi } from '@backstage/core-plugin-api';
 import { BackstagePalette } from '@backstage/theme';
 import { BackstageTheme } from '@backstage/theme';
+import { BackstageUserIdentity } from '@backstage/core-plugin-api';
 import { ButtonProps as ButtonProps_2 } from '@material-ui/core/Button';
 import { CardHeaderProps } from '@material-ui/core/CardHeader';
 import { Column } from '@material-table/core';
@@ -20,6 +21,7 @@ import { CSSProperties } from 'react';
 import { ElementType } from 'react';
 import { ErrorInfo } from 'react';
 import { IconComponent } from '@backstage/core-plugin-api';
+import { IdentityApi } from '@backstage/core-plugin-api';
 import { LinearProgressProps } from '@material-ui/core/LinearProgress';
 import { LinkProps as LinkProps_2 } from '@material-ui/core/Link';
 import { LinkProps as LinkProps_3 } from 'react-router-dom';
@@ -27,6 +29,7 @@ import MaterialBreadcrumbs from '@material-ui/core/Breadcrumbs';
 import { MaterialTableProps } from '@material-table/core';
 import { NavLinkProps } from 'react-router-dom';
 import { Overrides } from '@material-ui/core/styles/overrides';
+import { ProfileInfo } from '@backstage/core-plugin-api';
 import { ProfileInfoApi } from '@backstage/core-plugin-api';
 import { PropsWithChildren } from 'react';
 import { default as React_2 } from 'react';
@@ -35,6 +38,7 @@ import { ReactElement } from 'react';
 import { ReactNode } from 'react';
 import { SessionApi } from '@backstage/core-plugin-api';
 import { SignInPageProps } from '@backstage/core-plugin-api';
+import { SignInResult } from '@backstage/core-plugin-api';
 import { SparklinesLineProps } from 'react-sparklines';
 import { SparklinesProps } from 'react-sparklines';
 import { StyledComponentProps } from '@material-ui/core/styles';
@@ -85,7 +89,7 @@ export type BackstageOverrides = Overrides & {
 // @public (undocumented)
 export type BoldHeaderClassKey = 'root' | 'title' | 'subheader';
 
-// @public (undocumented)
+// @public
 export function BottomLink(props: BottomLinkProps): JSX.Element;
 
 // @public (undocumented)
@@ -100,7 +104,7 @@ export type BottomLinkProps = {
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function Breadcrumbs(props: Props_20): JSX.Element;
 
 // @public (undocumented)
@@ -111,7 +115,7 @@ export type BreadcrumbsStyledBoxClassKey = 'root';
 
 // Warning: (ae-forgotten-export) The symbol "IconComponentProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function BrokenImageIcon(props: IconComponentProps): JSX.Element;
 
 // @public
@@ -125,7 +129,7 @@ export type CardActionsTopRightClassKey = 'root';
 
 // Warning: (ae-forgotten-export) The symbol "CardTabProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function CardTab(props: PropsWithChildren<CardTabProps>): JSX.Element;
 
 // @public (undocumented)
@@ -147,7 +151,6 @@ export function CodeSnippet(props: CodeSnippetProps): JSX.Element;
 export interface CodeSnippetProps {
   customStyle?: any;
   highlightedNumbers?: number[];
-  // Warning: (tsdoc-reference-missing-identifier) Syntax error in declaration reference: expecting a member identifier
   language: string;
   showCopyCodeButton?: boolean;
   showLineNumbers?: boolean;
@@ -155,14 +158,13 @@ export interface CodeSnippetProps {
 }
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
-// Warning: (ae-missing-release-tag) "Content" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
-// @public (undocumented)
+// @public
 export function Content(props: PropsWithChildren<Props_13>): JSX.Element;
 
 // Warning: (ae-forgotten-export) The symbol "ContentHeaderProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function ContentHeader(
   props: PropsWithChildren<ContentHeaderProps>,
 ): JSX.Element;
@@ -306,7 +308,7 @@ export function EmailIcon(props: IconComponentProps): JSX.Element;
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function EmptyState(props: Props_2): JSX.Element;
 
 // @public (undocumented)
@@ -328,7 +330,7 @@ export type ErrorBoundaryProps = {
 
 // Warning: (ae-forgotten-export) The symbol "IErrorPageProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function ErrorPage(props: IErrorPageProps): JSX.Element;
 
 // @public (undocumented)
@@ -361,7 +363,7 @@ export type FeatureCalloutCircleClassKey =
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function FeatureCalloutCircular(
   props: PropsWithChildren<Props_4>,
 ): JSX.Element;
@@ -369,12 +371,12 @@ export function FeatureCalloutCircular(
 // @public (undocumented)
 export type FiltersContainerClassKey = 'root' | 'title';
 
-// @public (undocumented)
+// @public
 export function Gauge(props: GaugeProps): JSX.Element;
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function GaugeCard(props: Props_10): JSX.Element;
 
 // @public (undocumented)
@@ -412,7 +414,7 @@ export function GroupIcon(props: IconComponentProps): JSX.Element;
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function Header(props: PropsWithChildren<Props_14>): JSX.Element;
 
 // @public (undocumented)
@@ -429,7 +431,7 @@ export type HeaderClassKey =
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function HeaderIconLinkRow(props: Props_5): JSX.Element;
 
 // @public (undocumented)
@@ -437,7 +439,7 @@ export type HeaderIconLinkRowClassKey = 'links';
 
 // Warning: (ae-forgotten-export) The symbol "HeaderLabelProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function HeaderLabel(props: HeaderLabelProps): JSX.Element;
 
 // @public (undocumented)
@@ -445,7 +447,7 @@ export type HeaderLabelClassKey = 'root' | 'label' | 'value';
 
 // Warning: (ae-forgotten-export) The symbol "HeaderTabsProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function HeaderTabs(props: HeaderTabsProps): JSX.Element;
 
 // @public (undocumented)
@@ -463,7 +465,7 @@ export function HomepageTimer(_props: {}): JSX.Element | null;
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function HorizontalScrollGrid(
   props: PropsWithChildren<Props_6>,
 ): JSX.Element;
@@ -503,7 +505,7 @@ export type IconLinkVerticalProps = {
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function InfoCard(props: Props_15): JSX.Element;
 
 // @public (undocumented)
@@ -521,11 +523,9 @@ export type InfoCardVariants = 'flex' | 'fullHeight' | 'gridItem';
 
 // Warning: (ae-forgotten-export) The symbol "IntroCardProps" needs to be exported by the entry point index.d.ts
 //
-// @public (undocumented)
+// @public
 export function IntroCard(props: IntroCardProps): JSX.Element;
 
-// Warning: (tsdoc-malformed-html-name) Invalid HTML element: Expecting an HTML name
-// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
 // Warning: (ae-forgotten-export) The symbol "ItemCardProps" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "ItemCard" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -604,6 +604,50 @@ export type LinkProps = LinkProps_2 &
 //
 // @public (undocumented)
 export type LoginRequestListItemClassKey = 'root';
+
+// @public
+export function LogViewer(props: LogViewerProps): JSX.Element;
+
+// @public
+export type LogViewerClassKey =
+  | 'root'
+  | 'header'
+  | 'log'
+  | 'line'
+  | 'lineSelected'
+  | 'lineCopyButton'
+  | 'lineNumber'
+  | 'textHighlight'
+  | 'textSelectedHighlight'
+  | 'modifierBold'
+  | 'modifierItalic'
+  | 'modifierUnderline'
+  | 'modifierForegroundBlack'
+  | 'modifierForegroundRed'
+  | 'modifierForegroundGreen'
+  | 'modifierForegroundYellow'
+  | 'modifierForegroundBlue'
+  | 'modifierForegroundMagenta'
+  | 'modifierForegroundCyan'
+  | 'modifierForegroundWhite'
+  | 'modifierForegroundGrey'
+  | 'modifierBackgroundBlack'
+  | 'modifierBackgroundRed'
+  | 'modifierBackgroundGreen'
+  | 'modifierBackgroundYellow'
+  | 'modifierBackgroundBlue'
+  | 'modifierBackgroundMagenta'
+  | 'modifierBackgroundCyan'
+  | 'modifierBackgroundWhite'
+  | 'modifierBackgroundGrey';
+
+// @public
+export interface LogViewerProps {
+  classes?: {
+    root?: string;
+  };
+  text: string;
+}
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "MarkdownContent" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -766,13 +810,10 @@ export type ResponseErrorPanelClassKey = 'text' | 'divider';
 export function RoutedTabs(props: { routes: SubRoute_2[] }): JSX.Element;
 
 // Warning: (ae-forgotten-export) The symbol "SelectProps" needs to be exported by the entry point index.d.ts
-// Warning: (ae-missing-release-tag) "SelectComponent" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
 export function Select(props: SelectProps): JSX.Element;
 
-// Warning: (ae-missing-release-tag) "SelectClassKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public (undocumented)
 export type SelectClassKey =
   | 'formControl'
@@ -782,10 +823,17 @@ export type SelectClassKey =
   | 'checkbox'
   | 'root';
 
-// Warning: (ae-missing-release-tag) "SelectInputBaseClassKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
+// @public (undocumented)
+export type SelectedItems = string | string[] | number | number[];
+
 // @public (undocumented)
 export type SelectInputBaseClassKey = 'root' | 'input';
+
+// @public (undocumented)
+export type SelectItem = {
+  label: string;
+  value: string | number;
+};
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "Sidebar" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -832,6 +880,7 @@ export const SidebarContext: Context<SidebarContextType>;
 // @public (undocumented)
 export type SidebarContextType = {
   isOpen: boolean;
+  setOpen: (open: boolean) => void;
 };
 
 // Warning: (ae-missing-release-tag) "SidebarDivider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -1102,6 +1151,14 @@ export const SidebarDivider: React_2.ComponentType<
       className?: string | undefined;
     }
 >;
+
+// Warning: (ae-missing-release-tag) "SidebarDividerClassKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export type SidebarDividerClassKey = 'root';
+
+// @public
+export const SidebarExpandButton: () => JSX.Element | null;
 
 // Warning: (ae-missing-release-tag) "SidebarIntro" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -1708,6 +1765,11 @@ export const SidebarSpace: React_2.ComponentType<
     }
 >;
 
+// Warning: (ae-missing-release-tag) "SidebarSpaceClassKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export type SidebarSpaceClassKey = 'root';
+
 // Warning: (ae-missing-release-tag) "SidebarSpacer" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
@@ -1976,6 +2038,39 @@ export const SidebarSpacer: React_2.ComponentType<
       className?: string | undefined;
     }
 >;
+
+// Warning: (ae-missing-release-tag) "SidebarSpacerClassKey" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export type SidebarSpacerClassKey = 'root';
+
+// @public
+export const SidebarSubmenu: (props: SidebarSubmenuProps) => JSX.Element;
+
+// @public
+export const SidebarSubmenuItem: (
+  props: SidebarSubmenuItemProps,
+) => JSX.Element;
+
+// @public
+export type SidebarSubmenuItemDropdownItem = {
+  title: string;
+  to: string;
+};
+
+// @public
+export type SidebarSubmenuItemProps = {
+  title: string;
+  to: string;
+  icon: IconComponent;
+  dropdownItems?: SidebarSubmenuItemDropdownItem[];
+};
+
+// @public
+export type SidebarSubmenuProps = {
+  title?: string;
+  children: ReactNode;
+};
 
 // Warning: (ae-forgotten-export) The symbol "Props" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "SignInPage" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -2282,6 +2377,33 @@ export function useQueryParamState<T>(
 // @public (undocumented)
 export function UserIcon(props: IconComponentProps): JSX.Element;
 
+// @public
+export class UserIdentity implements IdentityApi {
+  static create(options: {
+    identity: BackstageUserIdentity;
+    authApi: ProfileInfoApi & BackstageIdentityApi & SessionApi;
+    profile?: ProfileInfo;
+  }): IdentityApi;
+  static createGuest(): IdentityApi;
+  static fromLegacy(result: SignInResult): IdentityApi;
+  // (undocumented)
+  getBackstageIdentity(): Promise<BackstageUserIdentity>;
+  // (undocumented)
+  getCredentials(): Promise<{
+    token?: string | undefined;
+  }>;
+  // (undocumented)
+  getIdToken(): Promise<string | undefined>;
+  // (undocumented)
+  getProfile(): ProfileInfo;
+  // (undocumented)
+  getProfileInfo(): Promise<ProfileInfo>;
+  // (undocumented)
+  getUserId(): string;
+  // (undocumented)
+  signOut(): Promise<void>;
+}
+
 // Warning: (ae-missing-release-tag) "useSupportConfig" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
@@ -2290,18 +2412,6 @@ export function useSupportConfig(): SupportConfig;
 // @public (undocumented)
 export function WarningIcon(props: IconComponentProps): JSX.Element;
 
-// Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-// Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-// Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-// Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
 // Warning: (ae-forgotten-export) The symbol "WarningProps" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "WarningPanel" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //

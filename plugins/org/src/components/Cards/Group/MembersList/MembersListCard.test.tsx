@@ -20,10 +20,13 @@ import {
   catalogApiRef,
   EntityProvider,
 } from '@backstage/plugin-catalog-react';
-import { renderWithEffects, wrapInTestApp } from '@backstage/test-utils';
+import {
+  renderWithEffects,
+  TestApiProvider,
+  wrapInTestApp,
+} from '@backstage/test-utils';
 import React from 'react';
 import { MembersListCard } from './MembersListCard';
-import { ApiProvider, ApiRegistry } from '@backstage/core-app-api';
 
 describe('MemberTab Test', () => {
   const groupEntity: GroupEntity = {
@@ -103,17 +106,15 @@ describe('MemberTab Test', () => {
       }),
   };
 
-  const apis = ApiRegistry.from([[catalogApiRef, catalogApi]]);
-
   it('Display Profile Card', async () => {
     const rendered = await renderWithEffects(
       wrapInTestApp(
-        <ApiProvider apis={apis}>
+        <TestApiProvider apis={[[catalogApiRef, catalogApi]]}>
           <EntityProvider entity={groupEntity}>
             <MembersListCard />
           </EntityProvider>
           ,
-        </ApiProvider>,
+        </TestApiProvider>,
       ),
     );
 
@@ -130,5 +131,19 @@ describe('MemberTab Test', () => {
     );
 
     expect(rendered.getByText('Members (1)')).toBeInTheDocument();
+  });
+
+  it('Can render different member display title', async () => {
+    const rendered = await renderWithEffects(
+      wrapInTestApp(
+        <TestApiProvider apis={[[catalogApiRef, catalogApi]]}>
+          <EntityProvider entity={groupEntity}>
+            <MembersListCard memberDisplayTitle="Testers" />
+          </EntityProvider>
+        </TestApiProvider>,
+      ),
+    );
+
+    expect(rendered.getByText('Testers (1)')).toBeInTheDocument();
   });
 });

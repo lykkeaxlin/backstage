@@ -55,7 +55,7 @@ export interface RouterOptions {
   catalogClient: CatalogApi;
   actions?: TemplateAction<any>[];
   taskWorkers?: number;
-  containerRunner: ContainerRunner;
+  containerRunner?: ContainerRunner;
   taskBroker?: TaskBroker;
 }
 
@@ -209,6 +209,7 @@ export async function createRouter(
                   name: step.name ?? step.action,
                 })),
                 output: template.spec.output ?? {},
+                metadata: { name: template.metadata?.name },
               }
             : {
                 apiVersion: template.apiVersion,
@@ -220,6 +221,7 @@ export async function createRouter(
                   name: step.name ?? step.action,
                 })),
                 output: template.spec.output ?? {},
+                metadata: { name: template.metadata?.name },
               };
       } else {
         throw new InputError(

@@ -44,13 +44,10 @@ export interface RouterOptions {
   providerFactories?: ProviderFactories;
 }
 
-export async function createRouter({
-  logger,
-  config,
-  discovery,
-  database,
-  providerFactories,
-}: RouterOptions): Promise<express.Router> {
+export async function createRouter(
+  options: RouterOptions,
+): Promise<express.Router> {
+  const { logger, config, discovery, database, providerFactories } = options;
   const router = Router();
 
   const appUrl = config.getString('app.baseUrl');
@@ -71,7 +68,15 @@ export async function createRouter({
   if (secret) {
     router.use(cookieParser(secret));
     // TODO: Configure the server-side session storage.  The default MemoryStore is not designed for production
-    router.use(session({ secret, saveUninitialized: false, resave: false }));
+    const enforceCookieSSL = authUrl.startsWith('https');
+    router.use(
+      session({
+        secret,
+        saveUninitialized: false,
+        resave: false,
+        cookie: { secure: enforceCookieSSL ? 'auto' : false },
+      }),
+    );
     router.use(passport.initialize());
     router.use(passport.session());
   } else {

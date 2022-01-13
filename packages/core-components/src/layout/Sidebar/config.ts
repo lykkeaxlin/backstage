@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createContext } from 'react';
+import { createContext, Dispatch, SetStateAction } from 'react';
 
 const drawerWidthClosed = 72;
 const iconPadding = 24;
@@ -37,13 +37,32 @@ export const sidebarConfig = {
   userBadgeDiameter: drawerWidthClosed - userBadgePadding * 2,
 };
 
+export const submenuConfig = {
+  drawerWidthClosed: 0,
+  drawerWidthOpen: 202,
+  defaultOpenDelayMs: sidebarConfig.defaultOpenDelayMs + 200,
+};
+
 export const SIDEBAR_INTRO_LOCAL_STORAGE =
   '@backstage/core/sidebar-intro-dismissed';
 
 export type SidebarContextType = {
   isOpen: boolean;
+  setOpen: (open: boolean) => void;
 };
 
 export const SidebarContext = createContext<SidebarContextType>({
   isOpen: false,
+  setOpen: _open => {},
 });
+
+export type SidebarItemWithSubmenuContextType = {
+  isHoveredOn: boolean;
+  setIsHoveredOn: Dispatch<SetStateAction<boolean>>;
+};
+
+export const SidebarItemWithSubmenuContext =
+  createContext<SidebarItemWithSubmenuContextType>({
+    isHoveredOn: false,
+    setIsHoveredOn: () => {},
+  });

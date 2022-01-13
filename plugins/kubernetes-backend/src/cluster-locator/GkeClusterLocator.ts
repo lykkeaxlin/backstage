@@ -23,6 +23,8 @@ type GkeClusterLocatorOptions = {
   projectId: string;
   region?: string;
   skipTLSVerify?: boolean;
+  skipMetricsLookup?: boolean;
+  exposeDashboard?: boolean;
 };
 
 export class GkeClusterLocator implements KubernetesClustersSupplier {
@@ -39,6 +41,9 @@ export class GkeClusterLocator implements KubernetesClustersSupplier {
       projectId: config.getString('projectId'),
       region: config.getOptionalString('region') ?? '-',
       skipTLSVerify: config.getOptionalBoolean('skipTLSVerify') ?? false,
+      skipMetricsLookup:
+        config.getOptionalBoolean('skipMetricsLookup') ?? false,
+      exposeDashboard: config.getOptionalBoolean('exposeDashboard') ?? false,
     };
     return new GkeClusterLocator(options, client);
   }
@@ -52,7 +57,13 @@ export class GkeClusterLocator implements KubernetesClustersSupplier {
 
   // TODO pass caData into the object
   async getClusters(): Promise<GKEClusterDetails[]> {
-    const { projectId, region, skipTLSVerify } = this.options;
+    const {
+      projectId,
+      region,
+      skipTLSVerify,
+      skipMetricsLookup,
+      exposeDashboard,
+    } = this.options;
     const request = {
       parent: `projects/${projectId}/locations/${region}`,
     };
@@ -65,6 +76,17 @@ export class GkeClusterLocator implements KubernetesClustersSupplier {
         url: `https://${r.endpoint ?? ''}`,
         authProvider: 'google',
         skipTLSVerify,
+        skipMetricsLookup,
+        ...(exposeDashboard
+          ? {
+              dashboardApp: 'gke',
+              dashboardParameters: {
+                projectId,
+                region,
+                clusterName: r.name,
+              },
+            }
+          : {}),
       }));
     } catch (e) {
       throw new ForwardedError(

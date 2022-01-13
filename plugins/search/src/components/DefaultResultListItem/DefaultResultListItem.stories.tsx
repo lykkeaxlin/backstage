@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Spotify AB
+ * Copyright 2021 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,66 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { Button } from '@backstage/core-components';
 import { Grid } from '@material-ui/core';
-import { DefaultResultListItem } from '../index';
+import FindInPageIcon from '@material-ui/icons/FindInPage';
+import GroupIcon from '@material-ui/icons/Group';
+import React from 'react';
 import { MemoryRouter } from 'react-router';
+import { DefaultResultListItem } from './DefaultResultListItem';
 
 export default {
   title: 'Plugins/Search/DefaultResultListItem',
   component: DefaultResultListItem,
+  decorators: [
+    (Story: () => JSX.Element) => (
+      <MemoryRouter>
+        <Grid container direction="row">
+          <Grid item xs={12}>
+            <Story />
+          </Grid>
+        </Grid>
+      </MemoryRouter>
+    ),
+  ],
+};
+
+const mockSearchResult = {
+  location: 'search/search-result',
+  title: 'Search Result 1',
+  text: 'some text from the search result',
+  owner: 'some-example-owner',
 };
 
 export const Default = () => {
+  return <DefaultResultListItem result={mockSearchResult} />;
+};
+
+export const WithIcon = () => {
   return (
-    <MemoryRouter>
-      <Grid container direction="row">
-        <Grid item xs={12}>
-          <DefaultResultListItem
-            result={{
-              location: 'search/search-result',
-              title: 'Search Result 1',
-              text: 'some text from the search result',
-            }}
-          />
-        </Grid>
-      </Grid>
-    </MemoryRouter>
+    <DefaultResultListItem
+      result={mockSearchResult}
+      icon={<FindInPageIcon color="primary" />}
+    />
+  );
+};
+
+export const WithSecondaryAction = () => {
+  return (
+    <DefaultResultListItem
+      result={mockSearchResult}
+      secondaryAction={
+        <Button
+          to="#"
+          size="small"
+          aria-label="owner"
+          variant="text"
+          startIcon={<GroupIcon />}
+          style={{ textTransform: 'lowercase' }}
+        >
+          {mockSearchResult.owner}
+        </Button>
+      }
+    />
   );
 };

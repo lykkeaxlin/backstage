@@ -35,6 +35,7 @@ export class ConfigClusterLocator implements KubernetesClustersSupplier {
           url: c.getString('url'),
           serviceAccountToken: c.getOptionalString('serviceAccountToken'),
           skipTLSVerify: c.getOptionalBoolean('skipTLSVerify') ?? false,
+          skipMetricsLookup: c.getOptionalBoolean('skipMetricsLookup') ?? false,
           caData: c.getOptionalString('caData'),
           authProvider: authProvider,
         };
@@ -45,6 +46,9 @@ export class ConfigClusterLocator implements KubernetesClustersSupplier {
         const dashboardApp = c.getOptionalString('dashboardApp');
         if (dashboardApp) {
           clusterDetails.dashboardApp = dashboardApp;
+        }
+        if (c.has('dashboardParameters')) {
+          clusterDetails.dashboardParameters = c.get('dashboardParameters');
         }
 
         switch (authProvider) {

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   AuthHandler,
   AuthProviderFactory,
@@ -21,7 +22,7 @@ import {
   SignInResolver,
 } from '../types';
 import express from 'express';
-import fetch from 'cross-fetch';
+import fetch from 'node-fetch';
 import * as crypto from 'crypto';
 import { KeyObject } from 'crypto';
 import { Logger } from 'winston';
@@ -32,9 +33,10 @@ import { CatalogIdentityClient } from '../../lib/catalog';
 import { Profile as PassportProfile } from 'passport';
 import { makeProfileInfo } from '../../lib/passport';
 import { AuthenticationError } from '@backstage/errors';
+import { prepareBackstageIdentityResponse } from '../prepareBackstageIdentityResponse';
 
 export const ALB_JWT_HEADER = 'x-amzn-oidc-data';
-export const ALB_ACCESSTOKEN_HEADER = 'x-amzn-oidc-accesstoken';
+export const ALB_ACCESS_TOKEN_HEADER = 'x-amzn-oidc-accesstoken';
 
 type Options = {
   region: string;
@@ -133,7 +135,7 @@ export class AwsAlbAuthProvider implements AuthProviderRouteHandlers {
 
   private async getResult(req: express.Request): Promise<AwsAlbResult> {
     const jwt = req.header(ALB_JWT_HEADER);
-    const accessToken = req.header(ALB_ACCESSTOKEN_HEADER);
+    const accessToken = req.header(ALB_ACCESS_TOKEN_HEADER);
 
     if (jwt === undefined) {
       throw new AuthenticationError(
@@ -143,7 +145,7 @@ export class AwsAlbAuthProvider implements AuthProviderRouteHandlers {
 
     if (accessToken === undefined) {
       throw new AuthenticationError(
-        `Missing ALB OIDC header: ${ALB_ACCESSTOKEN_HEADER}`,
+        `Missing ALB OIDC header: ${ALB_ACCESS_TOKEN_HEADER}`,
       );
     }
 
@@ -198,7 +200,7 @@ export class AwsAlbAuthProvider implements AuthProviderRouteHandlers {
         accessToken: result.accessToken,
         expiresInSeconds: result.expiresInSeconds,
       },
-      backstageIdentity,
+      backstageIdentity: prepareBackstageIdentityResponse(backstageIdentity),
       profile,
     };
   }

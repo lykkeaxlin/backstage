@@ -59,6 +59,7 @@ export type OAuth2AuthProviderOptions = OAuthProviderOptions & {
   tokenUrl: string;
   scope?: string;
   logger: Logger;
+  includeBasicAuth?: boolean;
 };
 
 export class OAuth2AuthProvider implements OAuthHandlers {
@@ -85,6 +86,14 @@ export class OAuth2AuthProvider implements OAuthHandlers {
         tokenURL: options.tokenUrl,
         passReqToCallback: false as true,
         scope: options.scope,
+        customHeaders: options.includeBasicAuth
+          ? {
+              Authorization: `Basic ${this.encodeClientCredentials(
+                options.clientId,
+                options.clientSecret,
+              )}`,
+            }
+          : undefined,
       },
       (
         accessToken: any,
@@ -118,9 +127,7 @@ export class OAuth2AuthProvider implements OAuthHandlers {
     });
   }
 
-  async handler(
-    req: express.Request,
-  ): Promise<{ response: OAuthResponse; refreshToken: string }> {
+  async handler(req: express.Request) {
     const { result, privateInfo } = await executeFrameHandlerStrategy<
       OAuthResult,
       PrivateInfo
@@ -132,29 +139,27 @@ export class OAuth2AuthProvider implements OAuthHandlers {
     };
   }
 
-  async refresh(req: OAuthRefreshRequest): Promise<OAuthResponse> {
+  async refresh(req: OAuthRefreshRequest) {
     const refreshTokenResponse = await executeRefreshTokenStrategy(
       this._strategy,
       req.refreshToken,
       req.scope,
     );
-    const {
-      accessToken,
-      params,
-      refreshToken: updatedRefreshToken,
-    } = refreshTokenResponse;
+    const { accessToken, params, refreshToken } = refreshTokenResponse;
 
     const fullProfile = await executeFetchUserProfileStrategy(
       this._strategy,
       accessToken,
     );
 
-    return this.handleResult({
-      fullProfile,
-      params,
-      accessToken,
-      refreshToken: updatedRefreshToken,
-    });
+    return {
+      response: await this.handleResult({
+        fullProfile,
+        params,
+        accessToken,
+      }),
+      refreshToken,
+    };
   }
 
   private async handleResult(result: OAuthResult) {
@@ -166,7 +171,6 @@ export class OAuth2AuthProvider implements OAuthHandlers {
         accessToken: result.accessToken,
         scope: result.params.scope,
         expiresInSeconds: result.params.expires_in,
-        refreshToken: result.refreshToken,
       },
       profile,
     };
@@ -186,6 +190,10 @@ export class OAuth2AuthProvider implements OAuthHandlers {
     }
 
     return response;
+  }
+
+  encodeClientCredentials(clientID: string, clientSecret: string): string {
+    return Buffer.from(`${clientID}:${clientSecret}`).toString('base64');
   }
 }
 
@@ -234,6 +242,7 @@ export const createOAuth2Provider = (
       const authorizationUrl = envConfig.getString('authorizationUrl');
       const tokenUrl = envConfig.getString('tokenUrl');
       const scope = envConfig.getOptionalString('scope');
+      const includeBasicAuth = envConfig.getOptionalBoolean('includeBasicAuth');
       const disableRefresh =
         envConfig.getOptionalBoolean('disableRefresh') ?? false;
 
@@ -270,6 +279,7 @@ export const createOAuth2Provider = (
         tokenUrl,
         scope,
         logger,
+        includeBasicAuth,
       });
 
       return OAuthAdapter.fromConfig(globalConfig, provider, {

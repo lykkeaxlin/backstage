@@ -16,7 +16,7 @@
 
 import * as msal from '@azure/msal-node';
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
-import fetch from 'cross-fetch';
+import fetch, { Response } from 'node-fetch';
 import qs from 'qs';
 import { MicrosoftGraphProviderConfig } from './config';
 
@@ -41,6 +41,11 @@ export type ODataQuery = {
   select?: string[];
 };
 
+/**
+ * Extends the base msgraph types to include the odata type.
+ *
+ * @public
+ */
 export type GroupMember =
   | (MicrosoftGraph.Group & { '@odata.type': '#microsoft.graph.user' })
   | (MicrosoftGraph.User & { '@odata.type': '#microsoft.graph.group' });

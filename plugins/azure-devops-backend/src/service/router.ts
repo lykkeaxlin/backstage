@@ -15,6 +15,7 @@
  */
 
 import {
+  DashboardPullRequest,
   PullRequestOptions,
   PullRequestStatus,
 } from '@backstage/plugin-azure-devops-common';
@@ -23,11 +24,12 @@ import { WebApi, getPersonalAccessTokenHandler } from 'azure-devops-node-api';
 import { AzureDevOpsApi } from '../api';
 import { Config } from '@backstage/config';
 import { Logger } from 'winston';
+import { PullRequestsDashboardProvider } from '../api/PullRequestsDashboardProvider';
 import Router from 'express-promise-router';
 import { errorHandler } from '@backstage/backend-common';
 import express from 'express';
 
-const DEFAULT_TOP: number = 10;
+const DEFAULT_TOP = 10;
 
 export interface RouterOptions {
   azureDevOpsApi?: AzureDevOpsApi;
@@ -50,6 +52,9 @@ export async function createRouter(
 
   const azureDevOpsApi =
     options.azureDevOpsApi || new AzureDevOpsApi(logger, webApi);
+
+  const pullRequestsDashboardProvider =
+    await PullRequestsDashboardProvider.create(logger, azureDevOpsApi);
 
   const router = Router();
   router.use(express.json());
@@ -80,31 +85,99 @@ export async function createRouter(
 
   router.get('/repo-builds/:projectName/:repoName', async (req, res) => {
     const { projectName, repoName } = req.params;
+
     const top = req.query.top ? Number(req.query.top) : DEFAULT_TOP;
+
     const gitRepository = await azureDevOpsApi.getRepoBuilds(
       projectName,
       repoName,
       top,
     );
+
     res.status(200).json(gitRepository);
   });
 
   router.get('/pull-requests/:projectName/:repoName', async (req, res) => {
     const { projectName, repoName } = req.params;
+
     const top = req.query.top ? Number(req.query.top) : DEFAULT_TOP;
+
     const status = req.query.status
       ? Number(req.query.status)
       : PullRequestStatus.Active;
+
     const pullRequestOptions: PullRequestOptions = {
       top: top,
       status: status,
     };
+
     const gitPullRequest = await azureDevOpsApi.getPullRequests(
       projectName,
       repoName,
       pullRequestOptions,
     );
+
     res.status(200).json(gitPullRequest);
+  });
+
+  router.get('/dashboard-pull-requests/:projectName', async (req, res) => {
+    const { projectName } = req.params;
+
+    const top = req.query.top ? Number(req.query.top) : DEFAULT_TOP;
+
+    const status = req.query.status
+      ? Number(req.query.status)
+      : PullRequestStatus.Active;
+
+    const pullRequestOptions: PullRequestOptions = {
+      top: top,
+      status: status,
+    };
+
+    const pullRequests: DashboardPullRequest[] =
+      await pullRequestsDashboardProvider.getDashboardPullRequests(
+        projectName,
+        pullRequestOptions,
+      );
+
+    res.status(200).json(pullRequests);
+  });
+
+  router.get('/all-teams', async (_req, res) => {
+    const allTeams = await pullRequestsDashboardProvider.getAllTeams();
+    res.status(200).json(allTeams);
+  });
+
+  router.get(
+    '/build-definitions/:projectName/:definitionName',
+    async (req, res) => {
+      const { projectName, definitionName } = req.params;
+      const buildDefinitionList = await azureDevOpsApi.getBuildDefinitions(
+        projectName,
+        definitionName,
+      );
+      res.status(200).json(buildDefinitionList);
+    },
+  );
+
+  router.get('/builds/:projectName', async (req, res) => {
+    const { projectName } = req.params;
+    const repoName = req.query.repoName?.toString();
+    const definitionName = req.query.definitionName?.toString();
+    const top = req.query.top ? Number(req.query.top) : DEFAULT_TOP;
+    const builds = await azureDevOpsApi.getBuildRuns(
+      projectName,
+      top,
+      repoName,
+      definitionName,
+    );
+    res.status(200).json(builds);
+  });
+
+  router.get('/users/:userId/team-ids', async (req, res) => {
+    const { userId } = req.params;
+    const teamIds = pullRequestsDashboardProvider.getUserTeamIds(userId);
+    res.status(200).json(teamIds);
   });
 
   router.use(errorHandler());

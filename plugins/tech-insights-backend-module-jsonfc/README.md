@@ -24,7 +24,7 @@ and modify the `techInsights.ts` file to contain a reference to the FactCheckers
 +   logger,
 +}),
 
- const builder = new DefaultTechInsightsBuilder({
+ const builder = buildTechInsightsContext({
    logger,
    config,
    database,
@@ -51,15 +51,17 @@ By default this implementation comes with an in-memory storage to store checks. 
 Checks for this FactChecker are constructed as [`json-rules-engine` compatible JSON rules](https://github.com/CacheControl/json-rules-engine/blob/master/docs/rules.md#conditions). A check could look like the following for example:
 
 ```ts
-import { TechInsightJsonRuleCheck } from '../types';
-import { JSON_RULE_ENGINE_CHECK_TYPE } from '../constants';
+import {
+  JSON_RULE_ENGINE_CHECK_TYPE,
+  TechInsightJsonRuleCheck,
+} from '@backstage/plugin-tech-insights-backend-module-jsonfc';
 
 export const exampleCheck: TechInsightJsonRuleCheck = {
   id: 'demodatacheck', // Unique identifier of this check
   name: 'demodatacheck', // A human readable name of this check to be displayed in the UI
   type: JSON_RULE_ENGINE_CHECK_TYPE, // Type identifier of the check. Used to run logic against, determine persistence option to use and render correct components on the UI
   description: 'A fact check for demoing purposes', // A description to be displayed in the UI
-  factRefs: ['demo-poc.factretriever'], // References to fact containers that this check uses. See documentation on FactRetrievers for more information on these
+  factIds: ['documentation-number-factretriever'], // References to fact ids that this check uses. See documentation on FactRetrievers for more information on these
   rule: {
     // The actual rule
     conditions: {
@@ -82,4 +84,35 @@ export const exampleCheck: TechInsightJsonRuleCheck = {
     link: 'https://sonar.mysonarqube.com/increasing-number-value',
   },
 };
+```
+
+# Custom operators
+
+json-rules-engine supports a limited [number of built-in operators](https://github.com/CacheControl/json-rules-engine/blob/master/docs/rules.md#operators) that can be used in conditions. You can add your own operators by adding them to the `operators` array in the `JsonRulesEngineFactCheckerFactory` constructor. For example:
+
+```diff
++ import { Operator } from 'json-rules-engine';
+
+const myFactCheckerFactory = new JsonRulesEngineFactCheckerFactory({
+   checks: [],
+   logger,
++  operators: [ new Operator("startsWith", (a, b) => a.startsWith(b) ]
+})
+```
+
+And you can then use it in your checks like this:
+
+```js
+...
+rule: {
+  conditions: {
+    any: [
+      {
+        fact: 'version',
+        operator: 'startsWith',
+        value: '12',
+      },
+    ],
+  },
+}
 ```

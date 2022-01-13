@@ -1,5 +1,75 @@
 # @backstage/plugin-catalog-react
 
+## 0.6.10
+
+### Patch Changes
+
+- fe2a6532ff: Add Override Components for Components in @backstage/plugin-catalog-react
+- 4ce51ab0f1: Internal refactor of the `react-use` imports to use `react-use/lib/*` instead.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.1
+  - @backstage/core-components@0.8.3
+
+## 0.6.9
+
+### Patch Changes
+
+- c6fdddec77: When a user has zero owned entities when viewing an entity kind in the catalog
+  page, it will be automatically redirected to see all the entities. Furthermore,
+  for the kind User and Group there are no longer the owned selector.
+- Updated dependencies
+  - @backstage/integration@0.7.0
+
+## 0.6.8
+
+### Patch Changes
+
+- 3491a36ab9: added useOwnedEntities hook to get the list of entities of the logged-in user
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.0
+  - @backstage/core-components@0.8.2
+  - @backstage/catalog-client@0.5.3
+
+## 0.6.7
+
+### Patch Changes
+
+- 6156fb8730: `useEntityTypeFilter`: Skip updating selected types if a kind filter change did not change them.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.3.1
+  - @backstage/core-components@0.8.1
+  - @backstage/catalog-model@0.9.8
+
+## 0.6.6
+
+### Patch Changes
+
+- 4c0f0b2003: Removed dependency on `@backstage/core-app-api`.
+
+## 0.6.5
+
+### Patch Changes
+
+- cd450844f6: Moved React dependencies to `peerDependencies` and allow both React v16 and v17 to be used.
+- 69034b4419: Fix typo in catalog-react package.json
+- Updated dependencies
+  - @backstage/core-components@0.8.0
+  - @backstage/core-plugin-api@0.3.0
+  - @backstage/core-app-api@0.2.0
+  - @backstage/version-bridge@0.1.1
+
+## 0.6.4
+
+### Patch Changes
+
+- a125278b81: Refactor out the deprecated path and icon from RouteRefs
+- Updated dependencies
+  - @backstage/catalog-client@0.5.2
+  - @backstage/catalog-model@0.9.7
+  - @backstage/core-components@0.7.4
+  - @backstage/core-plugin-api@0.2.0
+  - @backstage/core-app-api@0.1.21
+
 ## 0.6.3
 
 ### Patch Changes

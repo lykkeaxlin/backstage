@@ -23,12 +23,29 @@ import { escapeRegExp } from '../util/escapeRegExp';
 let rootLogger: winston.Logger;
 let redactionRegExp: RegExp | undefined;
 
-/** @public */
+/**
+ * Gets the current root logger.
+ *
+ * @public
+ */
 export function getRootLogger(): winston.Logger {
   return rootLogger;
 }
 
-/** @public */
+/**
+ * Sets a completely custom default "root" logger.
+ *
+ * @remarks
+ *
+ * This is the logger instance that will be the foundation for all other logger
+ * instances passed to plugins etc, in a given backend.
+ *
+ * Only use this if you absolutely need to make a completely custom logger.
+ * Normally if you want to make light adaptations to the default logger
+ * behavior, you would instead call {@link createRootLogger}.
+ *
+ * @public
+ */
 export function setRootLogger(newLogger: winston.Logger) {
   rootLogger = newLogger;
 }
@@ -54,17 +71,30 @@ export function setRootLoggerRedactionList(redactionList: string[]) {
  * and replaces them with the corresponding identifier.
  */
 function redactLogLine(info: winston.Logform.TransformableInfo) {
-  // TODO(hhogg): The logger is created before the config is loaded,
-  // because the logger is needed in the config loader. There is a risk of
-  // a secret being logged out during the config loading stage.
-  if (redactionRegExp) {
+  // TODO(hhogg): The logger is created before the config is loaded, because the
+  // logger is needed in the config loader. There is a risk of a secret being
+  // logged out during the config loading stage.
+  // TODO(freben): Added a check that info.message actually was a string,
+  // because it turned out that this was not necessarily guaranteed.
+  // https://github.com/backstage/backstage/issues/8306
+  if (redactionRegExp && typeof info.message === 'string') {
     info.message = info.message.replace(redactionRegExp, '[REDACTED]');
   }
 
   return info;
 }
 
-/** @public */
+/**
+ * Creates a default "root" logger. This also calls {@link setRootLogger} under
+ * the hood.
+ *
+ * @remarks
+ *
+ * This is the logger instance that will be the foundation for all other logger
+ * instances passed to plugins etc, in a given backend.
+ *
+ * @public
+ */
 export function createRootLogger(
   options: winston.LoggerOptions = {},
   env = process.env,

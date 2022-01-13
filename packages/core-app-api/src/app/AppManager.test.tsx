@@ -316,7 +316,7 @@ describe('Integration Test', () => {
       plugins: [
         createPlugin({
           id: 'test',
-          register: p => p.featureFlags.register('name'),
+          featureFlags: [{ name: 'name' }],
         }),
       ],
       components,
@@ -346,6 +346,94 @@ describe('Integration Test', () => {
     expect(storageFlags.registerFlag).toHaveBeenCalledWith({
       name: 'name',
       pluginId: 'test',
+    });
+  });
+
+  it('getFeatureFlags should return feature flags', async () => {
+    const storageFlags = new LocalStorageFeatureFlags();
+    jest.spyOn(storageFlags, 'registerFlag');
+
+    const apis = [
+      noOpAnalyticsApi,
+      createApiFactory({
+        api: featureFlagsApiRef,
+        deps: { configApi: configApiRef },
+        factory() {
+          return storageFlags;
+        },
+      }),
+    ];
+
+    const app = new AppManager({
+      apis,
+      defaultApis: [],
+      themes: [
+        {
+          id: 'light',
+          title: 'Light Theme',
+          variant: 'light',
+          Provider: ({ children }) => <>{children}</>,
+        },
+      ],
+      icons,
+      plugins: [
+        createPlugin({
+          id: 'test',
+          featureFlags: [
+            {
+              name: 'foo',
+            },
+          ],
+        }),
+        // We still support consuming the old feature flag API for a little while longer
+        {
+          getId() {
+            return 'old-test';
+          },
+          getApis() {
+            return [];
+          },
+          output() {
+            return [
+              {
+                type: 'feature-flag',
+                name: 'old-feature-flag',
+              },
+            ];
+          },
+        } as any,
+      ],
+      components,
+      configLoader: async () => [],
+      bindRoutes: ({ bind }) => {
+        bind(plugin1.externalRoutes, {
+          extRouteRef1: plugin1RouteRef,
+          extRouteRef2: plugin2RouteRef,
+        });
+      },
+    });
+
+    const Provider = app.getProvider();
+    const Router = app.getRouter();
+
+    await renderWithEffects(
+      <Provider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<ExposedComponent />} />
+            <Route path="/foo" element={<HiddenComponent />} />
+          </Routes>
+        </Router>
+      </Provider>,
+    );
+
+    expect(storageFlags.registerFlag).toHaveBeenCalledWith({
+      name: 'foo',
+      pluginId: 'test',
+    });
+    expect(storageFlags.registerFlag).toHaveBeenCalledWith({
+      name: 'old-feature-flag',
+      pluginId: 'old-test',
     });
   });
 

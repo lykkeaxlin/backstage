@@ -16,18 +16,16 @@
 import { ENTITY_DEFAULT_NAMESPACE } from '@backstage/catalog-model';
 import {
   AsyncEntityProvider,
-  entityRoute,
-  rootRoute,
   useEntity,
   useEntityFromUrl,
 } from '@backstage/plugin-catalog-react';
-import { Link, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import React, { ComponentType, ReactNode } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router';
 import { CatalogPage } from './CatalogPage';
 import { EntityNotFound } from './EntityNotFound';
 import { EntityPageLayout } from './EntityPageLayout';
-import { Content } from '@backstage/core-components';
+import { Content, Link } from '@backstage/core-components';
 
 const DefaultEntityPage = () => (
   <EntityPageLayout>
@@ -40,9 +38,7 @@ const DefaultEntityPage = () => (
           <Typography variant="body1">
             To override this component with your custom implementation, read
             docs on{' '}
-            <Link target="_blank" href="https://backstage.io/docs">
-              backstage.io/docs
-            </Link>
+            <Link to="https://backstage.io/docs">backstage.io/docs</Link>
           </Typography>
         </Content>
       }
@@ -87,9 +83,9 @@ export const Router = ({
   EntityPage?: ComponentType;
 }) => (
   <Routes>
-    <Route path={`${rootRoute.path}`} element={<CatalogPage />} />
+    <Route path="/" element={<CatalogPage />} />
     <Route
-      path={`${entityRoute.path}`}
+      path="/:namespace/:kind/:name"
       element={
         <EntityLoader>
           <EntityPageSwitch EntityPage={EntityPage} />

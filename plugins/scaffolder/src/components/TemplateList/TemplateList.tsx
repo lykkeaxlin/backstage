@@ -16,27 +16,51 @@
 
 import React, { ComponentType } from 'react';
 import {
+  Entity,
   stringifyEntityRef,
   TemplateEntityV1beta2,
 } from '@backstage/catalog-model';
 import {
+  Content,
+  ContentHeader,
   ItemCardGrid,
+  Link,
   Progress,
   WarningPanel,
 } from '@backstage/core-components';
 import { useEntityListProvider } from '@backstage/plugin-catalog-react';
-import { Link, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { TemplateCard } from '../TemplateCard';
 
 export type TemplateListProps = {
   TemplateCardComponent?:
     | ComponentType<{ template: TemplateEntityV1beta2 }>
     | undefined;
+  group?: {
+    title?: string;
+    titleComponent?: React.ReactNode;
+    filter: (entity: Entity) => boolean;
+  };
 };
 
-export const TemplateList = ({ TemplateCardComponent }: TemplateListProps) => {
+export const TemplateList = ({
+  TemplateCardComponent,
+  group,
+}: TemplateListProps) => {
   const { loading, error, entities } = useEntityListProvider();
   const Card = TemplateCardComponent || TemplateCard;
+  const maybeFilteredEntities = group
+    ? entities.filter(e => group.filter(e))
+    : entities;
+  const title = group ? (
+    group.titleComponent || <ContentHeader title={group.title} />
+  ) : (
+    <ContentHeader title="Other Templates" />
+  );
+
+  if (group && maybeFilteredEntities.length === 0) {
+    return null;
+  }
   return (
     <>
       {loading && <Progress />}
@@ -50,23 +74,26 @@ export const TemplateList = ({ TemplateCardComponent }: TemplateListProps) => {
       {!error && !loading && !entities.length && (
         <Typography variant="body2">
           No templates found that match your filter. Learn more about{' '}
-          <Link href="https://backstage.io/docs/features/software-templates/adding-templates">
+          <Link to="https://backstage.io/docs/features/software-templates/adding-templates">
             adding templates
           </Link>
           .
         </Typography>
       )}
 
-      <ItemCardGrid>
-        {entities &&
-          entities?.length > 0 &&
-          entities.map(template => (
-            <Card
-              key={stringifyEntityRef(template)}
-              template={template as TemplateEntityV1beta2}
-            />
-          ))}
-      </ItemCardGrid>
+      <Content>
+        {title}
+        <ItemCardGrid>
+          {maybeFilteredEntities &&
+            maybeFilteredEntities?.length > 0 &&
+            maybeFilteredEntities.map((template: Entity) => (
+              <Card
+                key={stringifyEntityRef(template)}
+                template={template as TemplateEntityV1beta2}
+              />
+            ))}
+        </ItemCardGrid>
+      </Content>
     </>
   );
 };

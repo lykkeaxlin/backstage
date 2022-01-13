@@ -26,6 +26,7 @@ export const EntityGroupProfileCard: ({
 // @public (undocumented)
 export const EntityMembersListCard: (_props: {
   entity?: GroupEntity | undefined;
+  memberDisplayTitle?: string | undefined;
 }) => JSX.Element;
 
 // Warning: (ae-missing-release-tag) "EntityOwnershipCard" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -33,9 +34,11 @@ export const EntityMembersListCard: (_props: {
 // @public (undocumented)
 export const EntityOwnershipCard: ({
   variant,
+  entityFilterKind,
 }: {
   entity?: Entity | undefined;
   variant?: InfoCardVariants | undefined;
+  entityFilterKind?: string[] | undefined;
 }) => JSX.Element;
 
 // Warning: (ae-missing-release-tag) "EntityUserProfileCard" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -61,7 +64,10 @@ export const GroupProfileCard: ({
 // Warning: (ae-missing-release-tag) "MembersListCard" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export const MembersListCard: (_props: { entity?: GroupEntity }) => JSX.Element;
+export const MembersListCard: (_props: {
+  entity?: GroupEntity;
+  memberDisplayTitle?: string;
+}) => JSX.Element;
 
 // Warning: (ae-missing-release-tag) "orgPlugin" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -75,9 +81,11 @@ export { orgPlugin as plugin };
 // @public (undocumented)
 export const OwnershipCard: ({
   variant,
+  entityFilterKind,
 }: {
   entity?: Entity | undefined;
   variant?: InfoCardVariants | undefined;
+  entityFilterKind?: string[] | undefined;
 }) => JSX.Element;
 
 // Warning: (ae-missing-release-tag) "UserProfileCard" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)

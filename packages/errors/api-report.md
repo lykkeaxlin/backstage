@@ -34,7 +34,7 @@ export type ErrorLike = {
 };
 
 // @public
-export type ErrorResponse = {
+export type ErrorResponseBody = {
   error: SerializedError;
   request?: {
     method: string;
@@ -66,18 +66,14 @@ export class NotFoundError extends CustomErrorBase {}
 export class NotModifiedError extends CustomErrorBase {}
 
 // @public
-export function parseErrorResponse(response: Response): Promise<ErrorResponse>;
+export function parseErrorResponseBody(
+  response: Response,
+): Promise<ErrorResponseBody>;
 
 // @public
 export class ResponseError extends Error {
-  constructor(props: {
-    message: string;
-    response: Response;
-    data: ErrorResponse;
-    cause: Error;
-  });
+  readonly body: ErrorResponseBody;
   readonly cause: Error;
-  readonly data: ErrorResponse;
   static fromResponse(response: Response): Promise<ResponseError>;
   readonly response: Response;
 }

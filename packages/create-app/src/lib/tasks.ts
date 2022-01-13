@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { BACKSTAGE_JSON } from '@backstage/cli-common';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import handlebars from 'handlebars';
@@ -22,6 +23,7 @@ import recursive from 'recursive-readdir';
 import {
   basename,
   dirname,
+  join,
   resolve as resolvePath,
   relative as relativePath,
 } from 'path';
@@ -84,6 +86,7 @@ export async function templatingTask(
   templateDir: string,
   destinationDir: string,
   context: any,
+  version: string,
 ) {
   const files = await recursive(templateDir).catch(error => {
     throw new Error(`Failed to read template directory: ${error.message}`);
@@ -133,6 +136,12 @@ export async function templatingTask(
       });
     }
   }
+  await Task.forItem('creating', BACKSTAGE_JSON, () =>
+    fs.writeFile(
+      join(destinationDir, BACKSTAGE_JSON),
+      `{\n  "version": ${JSON.stringify(version)}\n}\n`,
+    ),
+  );
 }
 
 /**
@@ -158,8 +167,8 @@ export async function checkAppExistsTask(rootDir: string, name: string) {
 /**
  * Verify that application `path` exists, otherwise create the directory
  *
- * @param {string} path - target to create directory
- * @throws {Error} if `path` is a file, or `fs.mkdir` fails
+ * @param path - target to create directory
+ * @throws if `path` is a file, or `fs.mkdir` fails
  */
 export async function checkPathExistsTask(path: string) {
   await Task.forItem('checking', path, async () => {
@@ -175,8 +184,8 @@ export async function checkPathExistsTask(path: string) {
 /**
  * Create a folder to store templated files
  *
- * @param {string} tempDir - target temporary directory
- * @throws {Error} if `fs.mkdir` fails
+ * @param tempDir - target temporary directory
+ * @throws if `fs.mkdir` fails
  */
 export async function createTemporaryAppFolderTask(tempDir: string) {
   await Task.forItem('creating', 'temporary directory', async () => {
@@ -191,7 +200,7 @@ export async function createTemporaryAppFolderTask(tempDir: string) {
 /**
  * Run `yarn install` and `run tsc` in application directory
  *
- * @param {string} appDir - location of application to build
+ * @param appDir - location of application to build
  */
 export async function buildAppTask(appDir: string) {
   const runCmd = async (cmd: string) => {
@@ -212,10 +221,10 @@ export async function buildAppTask(appDir: string) {
 /**
  * Move temporary directory to destination application folder
  *
- * @param {string} tempDir source path to copy files from
- * @param {string} destination target path to copy files
- * @param {string} id
- * @throws {Error} if `fs.move` fails
+ * @param tempDir - source path to copy files from
+ * @param destination - target path to copy files
+ * @param id - item ID
+ * @throws if `fs.move` fails
  */
 export async function moveAppTask(
   tempDir: string,

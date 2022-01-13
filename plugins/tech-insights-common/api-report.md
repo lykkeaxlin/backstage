@@ -4,12 +4,19 @@
 
 ```ts
 import { DateTime } from 'luxon';
+import { JsonValue } from '@backstage/types';
 
 // @public
 export interface BooleanCheckResult extends CheckResult {
   // (undocumented)
   result: boolean;
 }
+
+// @public
+export type BulkCheckResponse = Array<{
+  entity: string;
+  results: CheckResult[];
+}>;
 
 // @public
 export interface CheckResponse {
@@ -25,6 +32,7 @@ export interface CheckResponse {
 export type CheckResult = {
   facts: FactResponse;
   check: CheckResponse;
+  result: JsonValue;
 };
 
 // @public

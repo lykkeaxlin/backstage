@@ -20,10 +20,12 @@ import {
   Header,
   Lifecycle,
   Page,
-  Progress,
+  LogViewer,
 } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
 import { BackstageTheme } from '@backstage/theme';
 import {
+  Button,
   CircularProgress,
   Paper,
   StepButton,
@@ -40,14 +42,14 @@ import Check from '@material-ui/icons/Check';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import classNames from 'classnames';
 import { DateTime, Interval } from 'luxon';
-import React, { memo, Suspense, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router';
-import { useInterval } from 'react-use';
+import qs from 'qs';
+import React, { memo, useEffect, useMemo, useState } from 'react';
+import { generatePath, useNavigate, useParams } from 'react-router';
+import useInterval from 'react-use/lib/useInterval';
+import { rootRouteRef } from '../../routes';
 import { Status, TaskOutput } from '../../types';
 import { useTaskEventStream } from '../hooks/useEventStream';
 import { TaskPageLinks } from './TaskPageLinks';
-
-const LazyLog = React.lazy(() => import('react-lazylog/build/LazyLog'));
 
 // typings are wrong for this library, so fallback to not parsing types.
 const humanizeDuration = require('humanize-duration');
@@ -58,8 +60,8 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '100%',
     },
     button: {
-      marginTop: theme.spacing(1),
-      marginRight: theme.spacing(1),
+      marginBottom: theme.spacing(2),
+      marginLeft: theme.spacing(2),
     },
     actionsContainer: {
       marginBottom: theme.spacing(2),
@@ -213,26 +215,13 @@ export const TaskStatusStepper = memo(
   },
 );
 
-const TaskLogger = memo(({ log }: { log: string }) => {
-  return (
-    <Suspense fallback={<Progress />}>
-      <div style={{ height: '80vh' }}>
-        <LazyLog
-          text={log}
-          extraLines={1}
-          follow
-          selectableLines
-          enableSearch
-        />
-      </div>
-    </Suspense>
-  );
-});
-
 const hasLinks = ({ entityRef, remoteUrl, links = [] }: TaskOutput): boolean =>
   !!(entityRef || remoteUrl || links.length > 0);
 
 export const TaskPage = () => {
+  const classes = useStyles();
+  const navigate = useNavigate();
+  const rootLink = useRouteRef(rootRouteRef);
   const [userSelectedStepId, setUserSelectedStepId] = useState<
     string | undefined
   >(undefined);
@@ -284,6 +273,26 @@ export const TaskPage = () => {
 
   const { output } = taskStream;
 
+  const handleStartOver = () => {
+    if (!taskStream.task || !taskStream.task?.spec.metadata?.name) {
+      navigate(generatePath(rootLink()));
+    }
+
+    const formData =
+      taskStream.task!.spec.apiVersion === 'backstage.io/v1beta2'
+        ? taskStream.task!.spec.values
+        : taskStream.task!.spec.parameters;
+
+    navigate(
+      generatePath(
+        `${rootLink()}/templates/:templateName?${qs.stringify({ formData })}`,
+        {
+          templateName: taskStream.task!.spec.metadata!.name,
+        },
+      ),
+    );
+  };
+
   return (
     <Page themeId="home">
       <Header
@@ -315,10 +324,21 @@ export const TaskPage = () => {
                   {output && hasLinks(output) && (
                     <TaskPageLinks output={output} />
                   )}
+                  <Button
+                    className={classes.button}
+                    onClick={handleStartOver}
+                    disabled={!completed}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Start Over
+                  </Button>
                 </Paper>
               </Grid>
               <Grid item xs={9}>
-                <TaskLogger log={logAsString} />
+                <div style={{ height: '80vh' }}>
+                  <LogViewer text={logAsString} />
+                </div>
               </Grid>
             </Grid>
           </div>

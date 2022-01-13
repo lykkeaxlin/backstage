@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import React from 'react';
-import { useAsyncRetry } from 'react-use';
+import useAsyncRetry from 'react-use/lib/useAsyncRetry';
 import { GithubDeployment, githubDeploymentsApiRef } from '../api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import {
@@ -80,15 +80,12 @@ const GithubDeploymentsComponent = ({
   );
 };
 
-export const GithubDeploymentsCard = ({
-  last,
-  lastStatuses,
-  columns,
-}: {
+export const GithubDeploymentsCard = (props: {
   last?: number;
   lastStatuses?: number;
   columns?: TableColumn<GithubDeployment>[];
 }) => {
+  const { last, lastStatuses, columns } = props;
   const { entity } = useEntity();
   const [host] = [
     entity?.metadata.annotations?.[SOURCE_LOCATION_ANNOTATION],

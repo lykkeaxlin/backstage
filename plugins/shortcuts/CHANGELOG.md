@@ -1,5 +1,46 @@
 # @backstage/plugin-shortcuts
 
+## 0.1.18
+
+### Patch Changes
+
+- 4ce51ab0f1: Internal refactor of the `react-use` imports to use `react-use/lib/*` instead.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.1
+  - @backstage/core-components@0.8.3
+
+## 0.1.17
+
+### Patch Changes
+
+- b50cbd047b: Properly read saved shortcuts from StorageApi
+
+## 0.1.16
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.0
+  - @backstage/core-components@0.8.2
+
+## 0.1.15
+
+### Patch Changes
+
+- cd450844f6: Moved React dependencies to `peerDependencies` and allow both React v16 and v17 to be used.
+- Updated dependencies
+  - @backstage/core-components@0.8.0
+  - @backstage/core-plugin-api@0.3.0
+
+## 0.1.14
+
+### Patch Changes
+
+- f93e56ae3a: Add tooltip to display shortcut title on hover. This should improve the readability of shortcuts with long names, which are cutoff by ellipsis.
+- Updated dependencies
+  - @backstage/core-components@0.7.4
+  - @backstage/core-plugin-api@0.2.0
+
 ## 0.1.13
 
 ### Patch Changes

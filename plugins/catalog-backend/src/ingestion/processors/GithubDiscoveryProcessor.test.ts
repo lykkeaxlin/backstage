@@ -19,6 +19,10 @@ import { LocationSpec } from '@backstage/catalog-model';
 import { GithubDiscoveryProcessor, parseUrl } from './GithubDiscoveryProcessor';
 import { getOrganizationRepositories } from './github';
 import { ConfigReader } from '@backstage/config';
+import {
+  ScmIntegrations,
+  DefaultGithubCredentialsProvider,
+} from '@backstage/integration';
 
 jest.mock('./github');
 const mockGetOrganizationRepositories =
@@ -67,14 +71,18 @@ describe('GithubDiscoveryProcessor', () => {
 
   describe('reject unrelated entries', () => {
     it('rejects unknown types', async () => {
-      const processor = GithubDiscoveryProcessor.fromConfig(
-        new ConfigReader({
-          integrations: {
-            github: [{ host: 'github.com', token: 'blob' }],
-          },
-        }),
-        { logger: getVoidLogger() },
-      );
+      const config = new ConfigReader({
+        integrations: {
+          github: [{ host: 'github.com', token: 'blob' }],
+        },
+      });
+      const integrations = ScmIntegrations.fromConfig(config);
+      const githubCredentialsProvider =
+        DefaultGithubCredentialsProvider.fromIntegrations(integrations);
+      const processor = GithubDiscoveryProcessor.fromConfig(config, {
+        logger: getVoidLogger(),
+        githubCredentialsProvider,
+      });
       const location: LocationSpec = {
         type: 'not-github-discovery',
         target: 'https://github.com',
@@ -85,17 +93,21 @@ describe('GithubDiscoveryProcessor', () => {
     });
 
     it('rejects unknown targets', async () => {
-      const processor = GithubDiscoveryProcessor.fromConfig(
-        new ConfigReader({
-          integrations: {
-            github: [
-              { host: 'github.com', token: 'blob' },
-              { host: 'ghe.example.net', token: 'blob' },
-            ],
-          },
-        }),
-        { logger: getVoidLogger() },
-      );
+      const config = new ConfigReader({
+        integrations: {
+          github: [
+            { host: 'github.com', token: 'blob' },
+            { host: 'ghe.example.net', token: 'blob' },
+          ],
+        },
+      });
+      const integrations = ScmIntegrations.fromConfig(config);
+      const githubCredentialsProvider =
+        DefaultGithubCredentialsProvider.fromIntegrations(integrations);
+      const processor = GithubDiscoveryProcessor.fromConfig(config, {
+        logger: getVoidLogger(),
+        githubCredentialsProvider,
+      });
       const location: LocationSpec = {
         type: 'github-discovery',
         target: 'https://not.github.com/apa',
@@ -109,14 +121,18 @@ describe('GithubDiscoveryProcessor', () => {
   });
 
   describe('handles repositories', () => {
-    const processor = GithubDiscoveryProcessor.fromConfig(
-      new ConfigReader({
-        integrations: {
-          github: [{ host: 'github.com', token: 'blob' }],
-        },
-      }),
-      { logger: getVoidLogger() },
-    );
+    const config = new ConfigReader({
+      integrations: {
+        github: [{ host: 'github.com', token: 'blob' }],
+      },
+    });
+    const integrations = ScmIntegrations.fromConfig(config);
+    const githubCredentialsProvider =
+      DefaultGithubCredentialsProvider.fromIntegrations(integrations);
+    const processor = GithubDiscoveryProcessor.fromConfig(config, {
+      logger: getVoidLogger(),
+      githubCredentialsProvider,
+    });
 
     beforeEach(() => {
       mockGetOrganizationRepositories.mockClear();
@@ -157,6 +173,7 @@ describe('GithubDiscoveryProcessor', () => {
           type: 'url',
           target:
             'https://github.com/backstage/backstage/blob/master/catalog.yaml',
+          presence: 'optional',
         },
         optional: true,
       });
@@ -165,6 +182,7 @@ describe('GithubDiscoveryProcessor', () => {
         location: {
           type: 'url',
           target: 'https://github.com/backstage/demo/blob/master/catalog.yaml',
+          presence: 'optional',
         },
         optional: true,
       });
@@ -197,6 +215,7 @@ describe('GithubDiscoveryProcessor', () => {
           type: 'url',
           target:
             'https://github.com/backstage/tech-docs/blob/main/catalog.yaml',
+          presence: 'optional',
         },
         optional: true,
       });
@@ -251,6 +270,7 @@ describe('GithubDiscoveryProcessor', () => {
           type: 'url',
           target:
             'https://github.com/backstage/backstage/blob/master/catalog-info.yaml',
+          presence: 'optional',
         },
         optional: true,
       });
@@ -306,6 +326,7 @@ describe('GithubDiscoveryProcessor', () => {
           type: 'url',
           target:
             'https://github.com/backstage/techdocs-cli/blob/master/catalog.yaml',
+          presence: 'optional',
         },
         optional: true,
       });
@@ -315,6 +336,7 @@ describe('GithubDiscoveryProcessor', () => {
           type: 'url',
           target:
             'https://github.com/backstage/techdocs-container/blob/master/catalog.yaml',
+          presence: 'optional',
         },
         optional: true,
       });
@@ -370,6 +392,7 @@ describe('GithubDiscoveryProcessor', () => {
         location: {
           type: 'url',
           target: 'https://github.com/backstage/test/blob/master/catalog.yaml',
+          presence: 'optional',
         },
         optional: true,
       });

@@ -24,10 +24,9 @@ import React, {
   useState,
 } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { useAsync } from 'react-use';
+import useAsync from 'react-use/lib/useAsync';
 import {
   ApiProvider,
-  ApiRegistry,
   AppThemeSelector,
   ConfigReader,
   LocalStorageFeatureFlags,
@@ -43,6 +42,7 @@ import {
   AppThemeApi,
   ConfigApi,
   featureFlagsApiRef,
+  IdentityApi,
   identityApiRef,
   BackstagePlugin,
   RouteRef,
@@ -66,7 +66,7 @@ import { RoutingProvider } from '../routing/RoutingProvider';
 import { RouteTracker } from '../routing/RouteTracker';
 import { validateRoutes } from '../routing/validation';
 import { AppContextProvider } from './AppContext';
-import { AppIdentity } from './AppIdentity';
+import { AppIdentityProxy } from '../apis/implementations/IdentityApi/AppIdentityProxy';
 import {
   AppComponents,
   AppConfigLoader,
@@ -75,10 +75,16 @@ import {
   AppRouteBinder,
   BackstageApp,
   SignInPageProps,
-  SignInResult,
 } from './types';
 import { AppThemeProvider } from './AppThemeProvider';
 import { defaultConfigLoader } from './defaultConfigLoader';
+import { ApiRegistry } from '../apis/system/ApiRegistry';
+
+type CompatiblePlugin =
+  | BackstagePlugin<any, any>
+  | (Omit<BackstagePlugin<any, any>, 'getFeatureFlags'> & {
+      output(): Array<{ type: 'feature-flag'; name: string }>;
+    });
 
 export function generateBoundRoutes(bindRoutes: AppOptions['bindRoutes']) {
   const result = new Map<ExternalRouteRef, RouteRef | SubRouteRef>();
@@ -148,7 +154,7 @@ function useConfigLoader(
   if (noConfigNode) {
     return {
       node: (
-        <ApiProvider apis={ApiRegistry.from([[appThemeApiRef, appThemeApi]])}>
+        <ApiProvider apis={ApiRegistry.with(appThemeApiRef, appThemeApi)}>
           <ThemeProvider>{noConfigNode}</ThemeProvider>
         </ApiProvider>
       ),
@@ -182,22 +188,20 @@ export class AppManager implements BackstageApp {
 
   private readonly apis: Iterable<AnyApiFactory>;
   private readonly icons: NonNullable<AppOptions['icons']>;
-  private readonly plugins: Set<BackstagePlugin<any, any>>;
+  private readonly plugins: Set<CompatiblePlugin>;
   private readonly components: AppComponents;
   private readonly themes: AppTheme[];
   private readonly configLoader?: AppConfigLoader;
   private readonly defaultApis: Iterable<AnyApiFactory>;
   private readonly bindRoutes: AppOptions['bindRoutes'];
 
-  private readonly identityApi = new AppIdentity();
+  private readonly appIdentityProxy = new AppIdentityProxy();
   private readonly apiFactoryRegistry: ApiFactoryRegistry;
 
   constructor(options: AppOptions) {
     this.apis = options.apis ?? [];
     this.icons = options.icons;
-    this.plugins = new Set(
-      (options.plugins as BackstagePlugin<any, any>[]) ?? [],
-    );
+    this.plugins = new Set((options.plugins as CompatiblePlugin[]) ?? []);
     this.components = options.components;
     this.themes = options.themes as AppTheme[];
     this.configLoader = options.configLoader ?? defaultConfigLoader;
@@ -207,7 +211,7 @@ export class AppManager implements BackstageApp {
   }
 
   getPlugins(): BackstagePlugin<any, any>[] {
-    return Array.from(this.plugins);
+    return Array.from(this.plugins) as BackstagePlugin<any, any>[];
   }
 
   getSystemIcon(key: string): IconComponent | undefined {
@@ -272,17 +276,21 @@ export class AppManager implements BackstageApp {
           const featureFlagsApi = this.getApiHolder().get(featureFlagsApiRef)!;
 
           for (const plugin of this.plugins.values()) {
-            for (const output of plugin.output()) {
-              switch (output.type) {
-                case 'feature-flag': {
+            if ('getFeatureFlags' in plugin) {
+              for (const flag of plugin.getFeatureFlags()) {
+                featureFlagsApi.registerFlag({
+                  name: flag.name,
+                  pluginId: plugin.getId(),
+                });
+              }
+            } else {
+              for (const output of plugin.output()) {
+                if (output.type === 'feature-flag') {
                   featureFlagsApi.registerFlag({
                     name: output.name,
                     pluginId: plugin.getId(),
                   });
-                  break;
                 }
-                default:
-                  break;
               }
             }
           }
@@ -335,14 +343,14 @@ export class AppManager implements BackstageApp {
       component: ComponentType<SignInPageProps>;
       children: ReactElement;
     }) => {
-      const [result, setResult] = useState<SignInResult>();
+      const [identityApi, setIdentityApi] = useState<IdentityApi>();
 
-      if (result) {
-        this.identityApi.setSignInResult(result);
-        return children;
+      if (!identityApi) {
+        return <Component onSignInSuccess={setIdentityApi} />;
       }
 
-      return <Component onResult={setResult} />;
+      this.appIdentityProxy.setTarget(identityApi);
+      return children;
     };
 
     const AppRouter = ({ children }: PropsWithChildren<{}>) => {
@@ -351,12 +359,24 @@ export class AppManager implements BackstageApp {
 
       // If the app hasn't configured a sign-in page, we just continue as guest.
       if (!SignInPageComponent) {
-        this.identityApi.setSignInResult({
-          userId: 'guest',
-          profile: {
+        this.appIdentityProxy.setTarget({
+          getUserId: () => 'guest',
+          getIdToken: async () => undefined,
+          getProfile: () => ({
             email: 'guest@example.com',
             displayName: 'Guest',
-          },
+          }),
+          getProfileInfo: async () => ({
+            email: 'guest@example.com',
+            displayName: 'Guest',
+          }),
+          getBackstageIdentity: async () => ({
+            type: 'user',
+            userEntityRef: 'user:default/guest',
+            ownershipEntityRefs: ['user:default/guest'],
+          }),
+          getCredentials: async () => ({}),
+          signOut: async () => {},
         });
 
         return (
@@ -421,7 +441,7 @@ export class AppManager implements BackstageApp {
     this.apiFactoryRegistry.register('static', {
       api: identityApiRef,
       deps: {},
-      factory: () => this.identityApi,
+      factory: () => this.appIdentityProxy,
     });
 
     // It's possible to replace the feature flag API, but since we must have at least
@@ -464,7 +484,7 @@ export class AppManager implements BackstageApp {
     return this.apiHolder;
   }
 
-  private verifyPlugins(plugins: Iterable<BackstagePlugin>) {
+  private verifyPlugins(plugins: Iterable<CompatiblePlugin>) {
     const pluginIds = new Set<string>();
 
     for (const plugin of plugins) {

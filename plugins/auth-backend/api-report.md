@@ -9,12 +9,15 @@ import { CatalogApi } from '@backstage/catalog-client';
 import { Config } from '@backstage/config';
 import { Entity } from '@backstage/catalog-model';
 import express from 'express';
+import { JsonValue } from '@backstage/types';
 import { JSONWebKey } from 'jose';
 import { Logger as Logger_2 } from 'winston';
 import { PluginDatabaseManager } from '@backstage/backend-common';
 import { PluginEndpointDiscovery } from '@backstage/backend-common';
 import { Profile } from 'passport';
+import { TokenSet } from 'openid-client';
 import { UserEntity } from '@backstage/catalog-model';
+import { UserinfoResponse } from 'openid-client';
 
 // Warning: (ae-missing-release-tag) "AtlassianAuthProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -25,10 +28,13 @@ export class AtlassianAuthProvider implements OAuthHandlers {
   // (undocumented)
   handler(req: express.Request): Promise<{
     response: OAuthResponse;
-    refreshToken: string;
+    refreshToken: string | undefined;
   }>;
   // (undocumented)
-  refresh(req: OAuthRefreshRequest): Promise<OAuthResponse>;
+  refresh(req: OAuthRefreshRequest): Promise<{
+    response: OAuthResponse;
+    refreshToken: string | undefined;
+  }>;
   // Warning: (ae-forgotten-export) The symbol "RedirectInfo" needs to be exported by the entry point index.d.ts
   //
   // (undocumented)
@@ -43,6 +49,24 @@ export type AtlassianProviderOptions = {
   signIn?: {
     resolver: SignInResolver<OAuthResult>;
   };
+};
+
+// @public (undocumented)
+export type Auth0ProviderOptions = {
+  authHandler?: AuthHandler<OAuthResult>;
+  signIn?: {
+    resolver: SignInResolver<OAuthResult>;
+  };
+};
+
+// @public
+export type AuthHandler<TAuthResult> = (
+  input: TAuthResult,
+) => Promise<AuthHandlerResult>;
+
+// @public
+export type AuthHandlerResult = {
+  profile: ProfileInfo;
 };
 
 // Warning: (ae-missing-release-tag) "AuthProviderFactory" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -65,33 +89,13 @@ export type AuthProviderFactoryOptions = {
   catalogApi: CatalogApi;
 };
 
-// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
-// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
-// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
-// Warning: (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
 // Warning: (ae-missing-release-tag) "AuthProviderRouteHandlers" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public
 export interface AuthProviderRouteHandlers {
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   frameHandler(req: express.Request, res: express.Response): Promise<void>;
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   logout?(req: express.Request, res: express.Response): Promise<void>;
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   refresh?(req: express.Request, res: express.Response): Promise<void>;
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   start(req: express.Request, res: express.Response): Promise<void>;
 }
 
@@ -101,7 +105,7 @@ export interface AuthProviderRouteHandlers {
 export type AuthResponse<ProviderInfo> = {
   providerInfo: ProviderInfo;
   profile: ProfileInfo;
-  backstageIdentity?: BackstageIdentity;
+  backstageIdentity?: BackstageIdentityResponse;
 };
 
 // Warning: (ae-missing-release-tag) "AwsAlbProviderOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -114,14 +118,28 @@ export type AwsAlbProviderOptions = {
   };
 };
 
-// Warning: (ae-missing-release-tag) "BackstageIdentity" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export type BackstageIdentity = {
-  id: string;
-  idToken?: string;
-  token?: string;
+// @public @deprecated
+export type BackstageIdentity = BackstageSignInResult;
+
+// @public
+export interface BackstageIdentityResponse extends BackstageSignInResult {
+  identity: BackstageUserIdentity;
+}
+
+// @public
+export interface BackstageSignInResult {
+  // @deprecated
   entity?: Entity;
+  // @deprecated
+  id: string;
+  token: string;
+}
+
+// @public
+export type BackstageUserIdentity = {
+  type: 'user';
+  userEntityRef: string;
+  ownershipEntityRefs: string[];
 };
 
 // Warning: (ae-missing-release-tag) "BitbucketOAuthResult" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -175,11 +193,27 @@ export const bitbucketUserIdSignInResolver: SignInResolver<BitbucketOAuthResult>
 // @public (undocumented)
 export const bitbucketUsernameSignInResolver: SignInResolver<BitbucketOAuthResult>;
 
+// Warning: (ae-missing-release-tag) "CatalogIdentityClient" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public
+export class CatalogIdentityClient {
+  constructor(options: { catalogApi: CatalogApi; tokenIssuer: TokenIssuer });
+  // Warning: (ae-forgotten-export) The symbol "UserQuery" needs to be exported by the entry point index.d.ts
+  findUser(query: UserQuery): Promise<UserEntity>;
+  // Warning: (ae-forgotten-export) The symbol "MemberClaimQuery" needs to be exported by the entry point index.d.ts
+  resolveCatalogMembership(query: MemberClaimQuery): Promise<string[]>;
+}
+
 // Warning: (ae-missing-release-tag) "createAtlassianProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
 export const createAtlassianProvider: (
   options?: AtlassianProviderOptions | undefined,
+) => AuthProviderFactory;
+
+// @public (undocumented)
+export const createAuth0Provider: (
+  options?: Auth0ProviderOptions | undefined,
 ) => AuthProviderFactory;
 
 // Warning: (ae-missing-release-tag) "createAwsAlbProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -195,6 +229,11 @@ export const createAwsAlbProvider: (
 export const createBitbucketProvider: (
   options?: BitbucketProviderOptions | undefined,
 ) => AuthProviderFactory;
+
+// @public
+export function createGcpIapProvider(
+  options: GcpIapProviderOptions,
+): AuthProviderFactory;
 
 // Warning: (ae-missing-release-tag) "createGithubProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -231,11 +270,23 @@ export const createOAuth2Provider: (
   options?: OAuth2ProviderOptions | undefined,
 ) => AuthProviderFactory;
 
+// Warning: (ae-missing-release-tag) "createOidcProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const createOidcProvider: (
+  options?: OidcProviderOptions | undefined,
+) => AuthProviderFactory;
+
 // Warning: (ae-missing-release-tag) "createOktaProvider" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
 export const createOktaProvider: (
   _options?: OktaProviderOptions | undefined,
+) => AuthProviderFactory;
+
+// @public (undocumented)
+export const createOneLoginProvider: (
+  options?: OneLoginProviderOptions | undefined,
 ) => AuthProviderFactory;
 
 // Warning: (ae-missing-release-tag) "createOriginFilter" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -246,13 +297,12 @@ export function createOriginFilter(config: Config): (origin: string) => boolean;
 // Warning: (ae-missing-release-tag) "createRouter" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export function createRouter({
-  logger,
-  config,
-  discovery,
-  database,
-  providerFactories,
-}: RouterOptions): Promise<express.Router>;
+export function createRouter(options: RouterOptions): Promise<express.Router>;
+
+// @public (undocumented)
+export const createSamlProvider: (
+  options?: SamlProviderOptions | undefined,
+) => AuthProviderFactory;
 
 // Warning: (ae-missing-release-tag) "factories" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -270,6 +320,32 @@ export const encodeState: (state: OAuthState) => string;
 //
 // @public (undocumented)
 export const ensuresXRequestedWith: (req: express.Request) => boolean;
+
+// @public
+export type GcpIapProviderOptions = {
+  authHandler?: AuthHandler<GcpIapResult>;
+  signIn: {
+    resolver: SignInResolver<GcpIapResult>;
+  };
+};
+
+// @public
+export type GcpIapResult = {
+  iapToken: GcpIapTokenInfo;
+};
+
+// @public
+export type GcpIapTokenInfo = {
+  sub: string;
+  email: string;
+  [key: string]: JsonValue;
+};
+
+// Warning: (ae-forgotten-export) The symbol "TokenParams" needs to be exported by the entry point index.d.ts
+// Warning: (ae-missing-release-tag) "getEntityClaims" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export function getEntityClaims(entity: UserEntity): TokenParams['claims'];
 
 // Warning: (ae-missing-release-tag) "GithubOAuthResult" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -326,7 +402,7 @@ export type GoogleProviderOptions = {
 // @public
 export class IdentityClient {
   constructor(options: { discovery: PluginEndpointDiscovery; issuer: string });
-  authenticate(token: string | undefined): Promise<BackstageIdentity>;
+  authenticate(token: string | undefined): Promise<BackstageIdentityResponse>;
   static getBearerToken(
     authorizationHeader: string | undefined,
   ): string | undefined;
@@ -406,25 +482,17 @@ export class OAuthEnvironmentHandler implements AuthProviderRouteHandlers {
   start(req: express.Request, res: express.Response): Promise<void>;
 }
 
-// Warning: (ae-missing-release-tag) "OAuthHandlers" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
 // @public
 export interface OAuthHandlers {
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
   handler(req: express.Request): Promise<{
-    response: AuthResponse<OAuthProviderInfo>;
+    response: OAuthResponse;
     refreshToken?: string;
   }>;
   logout?(): Promise<void>;
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  refresh?(req: OAuthRefreshRequest): Promise<AuthResponse<OAuthProviderInfo>>;
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-  // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-  // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+  refresh?(req: OAuthRefreshRequest): Promise<{
+    response: OAuthResponse;
+    refreshToken?: string;
+  }>;
   start(req: OAuthStartRequest): Promise<RedirectInfo>;
 }
 
@@ -436,7 +504,6 @@ export type OAuthProviderInfo = {
   idToken?: string;
   expiresInSeconds?: number;
   scope: string;
-  refreshToken?: string;
 };
 
 // Warning: (ae-missing-release-tag) "OAuthProviderOptions" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -456,10 +523,12 @@ export type OAuthRefreshRequest = express.Request<{}> & {
   refreshToken: string;
 };
 
-// Warning: (ae-missing-release-tag) "OAuthResponse" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export type OAuthResponse = AuthResponse<OAuthProviderInfo>;
+// @public
+export type OAuthResponse = {
+  profile: ProfileInfo;
+  providerInfo: OAuthProviderInfo;
+  backstageIdentity?: BackstageSignInResult;
+};
 
 // Warning: (ae-missing-release-tag) "OAuthResult" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -492,6 +561,20 @@ export type OAuthState = {
   origin?: string;
 };
 
+// @public
+export type OidcAuthResult = {
+  tokenset: TokenSet;
+  userinfo: UserinfoResponse;
+};
+
+// @public
+export type OidcProviderOptions = {
+  authHandler?: AuthHandler<OidcAuthResult>;
+  signIn?: {
+    resolver?: SignInResolver<OidcAuthResult>;
+  };
+};
+
 // Warning: (ae-missing-release-tag) "oktaEmailSignInResolver" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
@@ -507,6 +590,14 @@ export type OktaProviderOptions = {
   };
 };
 
+// @public (undocumented)
+export type OneLoginProviderOptions = {
+  authHandler?: AuthHandler<OAuthResult>;
+  signIn?: {
+    resolver: SignInResolver<OAuthResult>;
+  };
+};
+
 // Warning: (ae-missing-release-tag) "postMessageResponse" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
@@ -516,8 +607,11 @@ export const postMessageResponse: (
   response: WebMessageResponse,
 ) => void;
 
-// Warning: (ae-missing-release-tag) "ProfileInfo" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
+// @public
+export function prepareBackstageIdentityResponse(
+  result: BackstageSignInResult,
+): BackstageIdentityResponse;
+
 // @public
 export type ProfileInfo = {
   email?: string;
@@ -547,6 +641,35 @@ export interface RouterOptions {
   // (undocumented)
   providerFactories?: ProviderFactories;
 }
+
+// @public (undocumented)
+export type SamlAuthResult = {
+  fullProfile: any;
+};
+
+// @public (undocumented)
+export type SamlProviderOptions = {
+  authHandler?: AuthHandler<SamlAuthResult>;
+  signIn?: {
+    resolver?: SignInResolver<SamlAuthResult>;
+  };
+};
+
+// @public
+export type SignInInfo<TAuthResult> = {
+  profile: ProfileInfo;
+  result: TAuthResult;
+};
+
+// @public
+export type SignInResolver<TAuthResult> = (
+  info: SignInInfo<TAuthResult>,
+  context: {
+    tokenIssuer: TokenIssuer;
+    catalogIdentityClient: CatalogIdentityClient;
+    logger: Logger_2;
+  },
+) => Promise<BackstageSignInResult>;
 
 // Warning: (ae-missing-release-tag) "TokenIssuer" is exported by the package, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -578,17 +701,8 @@ export type WebMessageResponse =
 
 // Warnings were encountered during analysis:
 //
-// src/identity/types.d.ts:25:5 - (ae-forgotten-export) The symbol "TokenParams" needs to be exported by the entry point index.d.ts
 // src/identity/types.d.ts:31:9 - (ae-forgotten-export) The symbol "AnyJWK" needs to be exported by the entry point index.d.ts
-// src/providers/atlassian/provider.d.ts:37:5 - (ae-forgotten-export) The symbol "AuthHandler" needs to be exported by the entry point index.d.ts
-// src/providers/atlassian/provider.d.ts:42:9 - (ae-forgotten-export) The symbol "SignInResolver" needs to be exported by the entry point index.d.ts
 // src/providers/aws-alb/provider.d.ts:77:5 - (ae-forgotten-export) The symbol "AwsAlbResult" needs to be exported by the entry point index.d.ts
-// src/providers/github/provider.d.ts:71:58 - (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
-// src/providers/github/provider.d.ts:71:90 - (tsdoc-escape-greater-than) The ">" character should be escaped using a backslash to avoid confusion with an HTML tag
-// src/providers/github/provider.d.ts:71:89 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/providers/github/provider.d.ts:71:67 - (tsdoc-malformed-html-name) Invalid HTML element: Expecting an HTML name
-// src/providers/github/provider.d.ts:71:68 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-// src/providers/github/provider.d.ts:78:5 - (ae-forgotten-export) The symbol "StateEncoder" needs to be exported by the entry point index.d.ts
-// src/providers/types.d.ts:100:5 - (ae-forgotten-export) The symbol "AuthProviderConfig" needs to be exported by the entry point index.d.ts
-// src/providers/types.d.ts:122:8 - (tsdoc-missing-deprecation-message) The @deprecated block must include a deprecation message, e.g. describing the recommended alternative
+// src/providers/github/provider.d.ts:81:5 - (ae-forgotten-export) The symbol "StateEncoder" needs to be exported by the entry point index.d.ts
+// src/providers/types.d.ts:88:5 - (ae-forgotten-export) The symbol "AuthProviderConfig" needs to be exported by the entry point index.d.ts
 ```

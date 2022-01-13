@@ -1,5 +1,6 @@
 abc
 accessors
+Airbrake
 Anddddd
 Apdex
 api
@@ -12,8 +13,10 @@ Atlassian
 automations
 autoscaling
 Autoscaling
+autoselect
 Avro
 backrub
+backported
 Bigtable
 Billett
 Bitbucket
@@ -53,6 +56,7 @@ configs
 const
 cookiecutter
 cron
+cronjobs
 css
 Datadog
 dataflow
@@ -65,6 +69,7 @@ deduplicated
 deps
 dependabot
 destructured
+destructuring
 dev
 devops
 devs
@@ -90,10 +95,12 @@ Figma
 firehydrant
 FireHydrant
 Firekube
+Firestore
 Fiverr
 gitbeaker
 GitHub
 GitLab
+Gource
 Grafana
 graphql
 GraphQL
@@ -187,12 +194,16 @@ OAuth
 octokit
 oidc
 Okta
+Oldsberg
 onboarding
 Onboarding
+OpenShift
 orgs
 pagerduty
 pageview
 parallelization
+Patrik
+Peloton
 plantuml
 Platformize
 Podman
@@ -292,6 +303,7 @@ truthy
 typeahead
 ui
 unbreak
+Unconference
 unmanaged
 unregister
 unregistration
@@ -303,6 +315,7 @@ utils
 validator
 validators
 varchar
+Wayfair
 Weaveworks
 Webpack
 winston
@@ -315,4 +328,3 @@ Zalando
 Zhou
 zoomable
 zsh
-Firestore

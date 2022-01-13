@@ -18,7 +18,7 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { BuildSummary, GitType } from 'circleci-api';
 import { getOr } from 'lodash/fp';
 import { useCallback, useEffect, useState } from 'react';
-import { useAsyncRetry } from 'react-use';
+import useAsyncRetry from 'react-use/lib/useAsyncRetry';
 import { circleCIApiRef } from '../api';
 import type { CITableBuildInfo } from '../components/BuildsPage/lib/CITable';
 import { CIRCLECI_ANNOTATION } from '../constants';
@@ -162,7 +162,7 @@ export function useBuilds() {
         vcs: {
           owner: owner,
           repo: repo,
-          type: GitType.GITHUB,
+          type: mapVcsType(vcs),
         },
       });
     } catch (e) {

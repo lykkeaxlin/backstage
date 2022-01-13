@@ -16,7 +16,11 @@
 
 import { ContainerRunner, UrlReader } from '@backstage/backend-common';
 import { CatalogApi } from '@backstage/catalog-client';
-import { ScmIntegrations } from '@backstage/integration';
+import {
+  GithubCredentialsProvider,
+  ScmIntegrations,
+  DefaultGithubCredentialsProvider,
+} from '@backstage/integration';
 import { Config } from '@backstage/config';
 import {
   createCatalogWriteAction,
@@ -36,6 +40,7 @@ import {
   createPublishGithubAction,
   createPublishGithubPullRequestAction,
   createPublishGitlabAction,
+  createPublishGitlabMergeRequestAction,
 } from './publish';
 import {
   createGithubActionsDispatchAction,
@@ -46,21 +51,18 @@ export const createBuiltinActions = (options: {
   reader: UrlReader;
   integrations: ScmIntegrations;
   catalogClient: CatalogApi;
-  containerRunner: ContainerRunner;
+  containerRunner?: ContainerRunner;
   config: Config;
 }) => {
   const { reader, integrations, containerRunner, catalogClient, config } =
     options;
+  const githubCredentialsProvider: GithubCredentialsProvider =
+    DefaultGithubCredentialsProvider.fromIntegrations(integrations);
 
-  return [
+  const actions = [
     createFetchPlainAction({
       reader,
       integrations,
-    }),
-    createFetchCookiecutterAction({
-      reader,
-      integrations,
-      containerRunner,
     }),
     createFetchTemplateAction({
       integrations,
@@ -69,13 +71,18 @@ export const createBuiltinActions = (options: {
     createPublishGithubAction({
       integrations,
       config,
+      githubCredentialsProvider,
     }),
     createPublishGithubPullRequestAction({
       integrations,
+      githubCredentialsProvider,
     }),
     createPublishGitlabAction({
       integrations,
       config,
+    }),
+    createPublishGitlabMergeRequestAction({
+      integrations,
     }),
     createPublishBitbucketAction({
       integrations,
@@ -92,9 +99,23 @@ export const createBuiltinActions = (options: {
     createFilesystemRenameAction(),
     createGithubActionsDispatchAction({
       integrations,
+      githubCredentialsProvider,
     }),
     createGithubWebhookAction({
       integrations,
+      githubCredentialsProvider,
     }),
   ];
+
+  if (containerRunner) {
+    actions.push(
+      createFetchCookiecutterAction({
+        reader,
+        integrations,
+        containerRunner,
+      }),
+    );
+  }
+
+  return actions;
 };

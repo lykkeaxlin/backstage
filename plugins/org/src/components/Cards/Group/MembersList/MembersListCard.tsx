@@ -28,21 +28,21 @@ import {
   Box,
   createStyles,
   Grid,
-  Link,
   makeStyles,
   Theme,
   Typography,
 } from '@material-ui/core';
 import Pagination from '@material-ui/lab/Pagination';
 import React from 'react';
-import { generatePath, Link as RouterLink } from 'react-router-dom';
-import { useAsync } from 'react-use';
+import { generatePath } from 'react-router-dom';
+import useAsync from 'react-use/lib/useAsync';
 
 import {
   Avatar,
   InfoCard,
   Progress,
   ResponseErrorPanel,
+  Link,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
@@ -90,7 +90,6 @@ const MemberComponent = ({ member }: { member: UserEntity }) => {
           <Box pt={2} textAlign="center">
             <Typography variant="h5">
               <Link
-                component={RouterLink}
                 to={generatePath(
                   `/catalog/:namespace/user/${metaName}`,
                   entityRouteParams(member),
@@ -99,7 +98,9 @@ const MemberComponent = ({ member }: { member: UserEntity }) => {
                 {displayName}
               </Link>
             </Typography>
-            <Typography variant="caption">{profile?.email}</Typography>
+            {profile?.email && (
+              <Link to={`mailto:${profile.email}`}>{profile.email}</Link>
+            )}
           </Box>
         </Box>
       </Box>
@@ -110,8 +111,10 @@ const MemberComponent = ({ member }: { member: UserEntity }) => {
 export const MembersListCard = (_props: {
   /** @deprecated The entity is now grabbed from context instead */
   entity?: GroupEntity;
+  memberDisplayTitle?: string;
 }) => {
   const { entity: groupEntity } = useEntity<GroupEntity>();
+  let { memberDisplayTitle } = _props;
   const {
     metadata: { name: groupName, namespace: grpNamespace },
     spec: { profile },
@@ -127,6 +130,7 @@ export const MembersListCard = (_props: {
     setPage(pageIndex);
   };
   const pageSize = 50;
+  memberDisplayTitle = memberDisplayTitle ? memberDisplayTitle : 'Members';
 
   const {
     loading,
@@ -172,7 +176,9 @@ export const MembersListCard = (_props: {
   return (
     <Grid item>
       <InfoCard
-        title={`Members (${members?.length || 0}${paginationLabel})`}
+        title={`${memberDisplayTitle} (${
+          members?.length || 0
+        }${paginationLabel})`}
         subheader={`of ${displayName}`}
         {...(nbPages <= 1 ? {} : { actions: pagination })}
       >
@@ -185,7 +191,9 @@ export const MembersListCard = (_props: {
               ))
           ) : (
             <Box p={2}>
-              <Typography>This group has no members.</Typography>
+              <Typography>
+                This group has no ${memberDisplayTitle.toLocaleLowerCase()}.
+              </Typography>
             </Box>
           )}
         </Grid>

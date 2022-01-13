@@ -18,7 +18,7 @@ import { isChildPath } from '@backstage/backend-common';
 import { Entity } from '@backstage/catalog-model';
 import { assertError, ForwardedError } from '@backstage/errors';
 import { ScmIntegrationRegistry } from '@backstage/integration';
-import { spawn } from 'child_process';
+import { SpawnOptionsWithoutStdio, spawn } from 'child_process';
 import fs from 'fs-extra';
 import gitUrlParse from 'git-url-parse';
 import yaml, { DEFAULT_SCHEMA, Type } from 'js-yaml';
@@ -27,6 +27,7 @@ import { PassThrough, Writable } from 'stream';
 import { Logger } from 'winston';
 import { ParsedLocationAnnotation } from '../../helpers';
 import { SupportedGeneratorKey } from './types';
+import { getFileTreeRecursively } from '../publish/helpers';
 
 // TODO: Implement proper support for more generators.
 export function getGeneratorKey(entity: Entity): SupportedGeneratorKey {
@@ -38,19 +39,18 @@ export function getGeneratorKey(entity: Entity): SupportedGeneratorKey {
 }
 
 export type RunCommandOptions = {
+  /** command to run */
   command: string;
+  /** arguments to pass the command */
   args: string[];
-  options: object;
+  /** options to pass to spawn */
+  options: SpawnOptionsWithoutStdio;
+  /** stream to capture stdout and stderr output */
   logStream?: Writable;
 };
 
 /**
- *
- * @param options the options object
- * @param options.command the command to run
- * @param options.args the arguments to pass the command
- * @param options.options options used in spawn
- * @param options.logStream the log streamer to capture log messages
+ * Run a command in a sub-process, normally a shell command.
  */
 export const runCommand = async ({
   command,
@@ -86,9 +86,9 @@ export const runCommand = async ({
  * Return the source url for MkDocs based on the backstage.io/techdocs-ref annotation.
  * Depending on the type of target, it can either return a repo_url, an edit_uri, both, or none.
  *
- * @param {ParsedLocationAnnotation} parsedLocationAnnotation Object with location url and type
- * @param {ScmIntegrationRegistry} scmIntegrations the scmIntegration to do url transformations
- * @param {string} docsFolder the configured docs folder in the mkdocs.yml (defaults to 'docs')
+ * @param parsedLocationAnnotation - Object with location url and type
+ * @param scmIntegrations - the scmIntegration to do url transformations
+ * @param docsFolder - the configured docs folder in the mkdocs.yml (defaults to 'docs')
  * @returns the settings for the mkdocs.yml
  */
 export const getRepoUrlFromLocationAnnotation = (
@@ -140,7 +140,7 @@ const MKDOCS_SCHEMA = DEFAULT_SCHEMA.extend([
  * Finds and loads the contents of either an mkdocs.yml or mkdocs.yaml file,
  * depending on which is present (MkDocs supports both as of v1.2.2).
  *
- * @param {string} inputDir base dir to be searched for either an mkdocs.yml or
+ * @param inputDir - base dir to be searched for either an mkdocs.yml or
  *   mkdocs.yaml file.
  */
 export const getMkdocsYml = async (
@@ -173,8 +173,8 @@ export const getMkdocsYml = async (
  * Validating mkdocs config file for incorrect/insecure values
  * Throws on invalid configs
  *
- * @param {string} inputDir base dir to be used as a docs_dir path validity check
- * @param {string} mkdocsYmlFileString The string contents of the loaded
+ * @param inputDir - base dir to be used as a docs_dir path validity check
+ * @param mkdocsYmlFileString - The string contents of the loaded
  *   mkdocs.yml or equivalent of a docs site
  * @returns the parsed docs_dir or undefined
  */
@@ -215,10 +215,10 @@ export const validateMkdocsYaml = async (
  * This function will not throw an error since this is not critical to the whole TechDocs pipeline.
  * Instead it will log warnings if there are any errors in reading, parsing or writing YAML.
  *
- * @param {string} mkdocsYmlPath Absolute path to mkdocs.yml or equivalent of a docs site
- * @param {Logger} logger
- * @param {ParsedLocationAnnotation} parsedLocationAnnotation Object with location url and type
- * @param {ScmIntegrationRegistry} scmIntegrations the scmIntegration to do url transformations
+ * @param mkdocsYmlPath - Absolute path to mkdocs.yml or equivalent of a docs site
+ * @param logger - A logger instance
+ * @param parsedLocationAnnotation - Object with location url and type
+ * @param scmIntegrations - the scmIntegration to do url transformations
  */
 export const patchMkdocsYmlPreBuild = async (
   mkdocsYmlPath: string,
@@ -345,14 +345,20 @@ export const patchIndexPreBuild = async ({
 };
 
 /**
- * Update the techdocs_metadata.json to add a new build timestamp metadata. Create the .json file if it doesn't exist.
+ * Create or update the techdocs_metadata.json. Values initialized/updated are:
+ * - The build_timestamp (now)
+ * - The list of files generated
  *
- * @param {string} techdocsMetadataPath File path to techdocs_metadata.json
+ * @param techdocsMetadataPath - File path to techdocs_metadata.json
  */
-export const addBuildTimestampMetadata = async (
+export const createOrUpdateMetadata = async (
   techdocsMetadataPath: string,
   logger: Logger,
 ): Promise<void> => {
+  const techdocsMetadataDir = techdocsMetadataPath
+    .split(path.sep)
+    .slice(0, -1)
+    .join(path.sep);
   // check if file exists, create if it does not.
   try {
     await fs.access(techdocsMetadataPath, fs.constants.F_OK);
@@ -372,6 +378,19 @@ export const addBuildTimestampMetadata = async (
   }
 
   json.build_timestamp = Date.now();
+
+  // Get and write generated files to the metadata JSON. Each file string is in
+  // a form appropriate for invalidating the associated object from cache.
+  try {
+    json.files = (await getFileTreeRecursively(techdocsMetadataDir)).map(file =>
+      file.replace(`${techdocsMetadataDir}${path.sep}`, ''),
+    );
+  } catch (err) {
+    assertError(err);
+    json.files = [];
+    logger.warn(`Unable to add files list to metadata: ${err.message}`);
+  }
+
   await fs.writeJson(techdocsMetadataPath, json);
   return;
 };
@@ -381,8 +400,8 @@ export const addBuildTimestampMetadata = async (
  * This is helpful to check if a TechDocs site in storage has gone outdated, without maintaining an in-memory build info
  * per Backstage instance.
  *
- * @param {string} techdocsMetadataPath File path to techdocs_metadata.json
- * @param {string} etag
+ * @param techdocsMetadataPath - File path to techdocs_metadata.json
+ * @param etag - The ETag to use
  */
 export const storeEtagMetadata = async (
   techdocsMetadataPath: string,

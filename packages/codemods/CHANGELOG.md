@@ -1,5 +1,69 @@
 # @backstage/codemods
 
+## 0.1.28
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.1
+  - @backstage/core-app-api@0.3.1
+  - @backstage/core-components@0.8.3
+
+## 0.1.27
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-app-api@0.3.0
+  - @backstage/core-plugin-api@0.4.0
+  - @backstage/core-components@0.8.2
+
+## 0.1.26
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-app-api@0.2.1
+  - @backstage/core-plugin-api@0.3.1
+  - @backstage/core-components@0.8.1
+
+## 0.1.25
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-components@0.8.0
+  - @backstage/core-plugin-api@0.3.0
+  - @backstage/core-app-api@0.2.0
+
+## 0.1.24
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-components@0.7.6
+  - @backstage/core-plugin-api@0.2.2
+  - @backstage/core-app-api@0.1.24
+
+## 0.1.23
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/core-app-api@0.1.23
+  - @backstage/core-plugin-api@0.2.1
+  - @backstage/core-components@0.7.5
+
+## 0.1.22
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/cli-common@0.1.6
+  - @backstage/core-components@0.7.4
+  - @backstage/core-plugin-api@0.2.0
+  - @backstage/core-app-api@0.1.21
+
 ## 0.1.21
 
 ### Patch Changes

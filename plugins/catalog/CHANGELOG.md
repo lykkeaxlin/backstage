@@ -1,5 +1,87 @@
 # @backstage/plugin-catalog
 
+## 0.7.7
+
+### Patch Changes
+
+- 4ce51ab0f1: Internal refactor of the `react-use` imports to use `react-use/lib/*` instead.
+- 11b81683a9: Support customizing index page layouts via outlets
+- e195390974: Allow entities from `file` locations to be manually refreshed through the UI
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.1
+  - @backstage/plugin-catalog-react@0.6.10
+  - @backstage/core-components@0.8.3
+
+## 0.7.6
+
+### Patch Changes
+
+- 7d4b4e937c: Uptake changes to the GitHub Credentials Provider interface.
+- Updated dependencies
+  - @backstage/plugin-catalog-react@0.6.9
+  - @backstage/integration-react@0.1.17
+
+## 0.7.5
+
+### Patch Changes
+
+- 3fa31ec84a: Deprecated the `CatalogClientWrapper` class.
+
+  The default implementation of `catalogApiRef` that this plugin exposes, is now powered by the new `fetchApiRef`. The default implementation of _that_ API, in turn, has the ability to inject the user's Backstage token in requests in a similar manner to what the deprecated `CatalogClientWrapper` used to do. The latter has therefore been taken out of the default catalog API implementation.
+
+  If you use a custom `fetchApiRef` implementation that does NOT issue tokens, or use a custom `catalogApiRef` implementation which does NOT use the default `fetchApiRef`, you can still for some time wrap your catalog API in this class to get back the old behavior:
+
+  ```ts
+  // Add this to your packages/app/src/plugins.ts if you want to get back the old
+  // catalog client behavior:
+  createApiFactory({
+    api: catalogApiRef,
+    deps: { discoveryApi: discoveryApiRef, identityApi: identityApiRef },
+    factory: ({ discoveryApi, identityApi }) =>
+      new CatalogClientWrapper({
+        client: new CatalogClient({ discoveryApi }),
+        identityApi,
+      }),
+  }),
+  ```
+
+  But do consider migrating to making use of the `fetchApiRef` as soon as convenient, since the wrapper class will be removed in a future release.
+
+- 7a4bd2ceac: Prefer using `Link` from `@backstage/core-components` rather than material-UI.
+- Updated dependencies
+  - @backstage/core-plugin-api@0.4.0
+  - @backstage/plugin-catalog-react@0.6.8
+  - @backstage/core-components@0.8.2
+  - @backstage/catalog-client@0.5.3
+  - @backstage/integration-react@0.1.16
+
+## 0.7.4
+
+### Patch Changes
+
+- 9603827bb5: Addressed some peer dependency warnings
+- cd450844f6: Moved React dependencies to `peerDependencies` and allow both React v16 and v17 to be used.
+- Updated dependencies
+  - @backstage/core-components@0.8.0
+  - @backstage/core-plugin-api@0.3.0
+  - @backstage/integration-react@0.1.15
+  - @backstage/plugin-catalog-react@0.6.5
+
+## 0.7.3
+
+### Patch Changes
+
+- 38d6df6bb9: Remove the "View Api" icon in the AboutCard, as the information is misleading for some users and is
+  duplicated in the tabs above.
+- a125278b81: Refactor out the deprecated path and icon from RouteRefs
+- Updated dependencies
+  - @backstage/catalog-client@0.5.2
+  - @backstage/catalog-model@0.9.7
+  - @backstage/plugin-catalog-react@0.6.4
+  - @backstage/core-components@0.7.4
+  - @backstage/core-plugin-api@0.2.0
+  - @backstage/integration-react@0.1.14
+
 ## 0.7.2
 
 ### Patch Changes

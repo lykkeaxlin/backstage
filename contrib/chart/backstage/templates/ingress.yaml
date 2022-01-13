@@ -1,7 +1,13 @@
 {{- $frontendUrl := urlParse .Values.appConfig.app.baseUrl}}
 {{- $backendUrl := urlParse .Values.appConfig.backend.baseUrl}}
 {{- $lighthouseUrl := urlParse .Values.appConfig.lighthouse.baseUrl}}
+
+{{/* Determine the api type for the ingress */}}
+{{- if lt .Capabilities.KubeVersion.Minor "19" }}
 apiVersion: networking.k8s.io/v1beta1
+{{- else if ge .Capabilities.KubeVersion.Minor "19" }}
+apiVersion: networking.k8s.io/v1
+{{- end }}
 kind: Ingress
 metadata:
   name: {{ include "backstage.fullname" . }}-ingress
@@ -34,7 +40,7 @@ spec:
               servicePort: 80
           {{/* Route the backend inside the same hostname as the frontend when they are the same */}}
           {{- if eq $frontendUrl.host $backendUrl.host}}
-          - path: /api
+          - path: /api/
             backend:
               serviceName: {{ include "backend.serviceName" . }}
               servicePort: 80

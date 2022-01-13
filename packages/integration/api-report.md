@@ -30,6 +30,8 @@ export class AwsS3Integration implements ScmIntegration {
 // @public
 export type AwsS3IntegrationConfig = {
   host: string;
+  endpoint?: string;
+  s3ForcePathStyle?: boolean;
   accessKeyId?: string;
   secretAccessKey?: string;
   roleArn?: string;
@@ -93,6 +95,17 @@ export type BitbucketIntegrationConfig = {
 };
 
 // @public
+export class DefaultGithubCredentialsProvider
+  implements GithubCredentialsProvider
+{
+  // (undocumented)
+  static fromIntegrations(
+    integrations: ScmIntegrationRegistry,
+  ): DefaultGithubCredentialsProvider;
+  getCredentials(opts: { url: string }): Promise<GithubCredentials>;
+}
+
+// @public
 export function defaultScmResolveUrl(options: {
   url: string;
   base: string;
@@ -112,7 +125,9 @@ export function getAzureFileFetchUrl(url: string): string;
 export function getAzureRequestOptions(
   config: AzureIntegrationConfig,
   additionalHeaders?: Record<string, string>,
-): RequestInit;
+): {
+  headers: Record<string, string>;
+};
 
 // @public
 export function getBitbucketDefaultBranch(
@@ -135,7 +150,9 @@ export function getBitbucketFileFetchUrl(
 // @public
 export function getBitbucketRequestOptions(
   config: BitbucketIntegrationConfig,
-): RequestInit;
+): {
+  headers: Record<string, string>;
+};
 
 // @public
 export function getGitHubFileFetchUrl(
@@ -148,7 +165,9 @@ export function getGitHubFileFetchUrl(
 export function getGitHubRequestOptions(
   config: GitHubIntegrationConfig,
   credentials: GithubCredentials,
-): RequestInit;
+): {
+  headers: Record<string, string>;
+};
 
 // @public
 export function getGitLabFileFetchUrl(
@@ -157,9 +176,9 @@ export function getGitLabFileFetchUrl(
 ): Promise<string>;
 
 // @public
-export function getGitLabRequestOptions(
-  config: GitLabIntegrationConfig,
-): RequestInit;
+export function getGitLabRequestOptions(config: GitLabIntegrationConfig): {
+  headers: Record<string, string>;
+};
 
 // @public
 export type GithubAppConfig = {
@@ -192,9 +211,8 @@ export type GithubCredentials = {
 };
 
 // @public
-export class GithubCredentialsProvider {
+export interface GithubCredentialsProvider {
   // (undocumented)
-  static create(config: GitHubIntegrationConfig): GithubCredentialsProvider;
   getCredentials(opts: { url: string }): Promise<GithubCredentials>;
 }
 
@@ -417,8 +435,12 @@ export interface ScmIntegrationsGroup<T extends ScmIntegration> {
   list(): T[];
 }
 
-// Warnings were encountered during analysis:
-//
-// src/gitlab/config.d.ts:29:68 - (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-// src/gitlab/config.d.ts:29:63 - (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+// @public
+export class SingleInstanceGithubCredentialsProvider
+  implements GithubCredentialsProvider
+{
+  // (undocumented)
+  static create: (config: GitHubIntegrationConfig) => GithubCredentialsProvider;
+  getCredentials(opts: { url: string }): Promise<GithubCredentials>;
+}
 ```

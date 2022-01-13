@@ -1,5 +1,336 @@
 # @backstage/create-app
 
+## 0.4.11
+
+## 0.4.10
+
+### Patch Changes
+
+- 79b342bd36: removed inline and internal CSS from index.html
+
+  To make this change to an existing app, apply the following changes to the `packages/app/public/index.html` file:
+
+  Remove internal style
+
+  ```diff
+  - <style>
+  -  #root {
+  -    min-height: 100%;
+  -  }
+  - </style>
+  ```
+
+  Remove inline style from the body tag
+
+  ```diff
+  - <body style="margin: 0">
+  + <body>
+  ```
+
+- d33b65dc52: Removed unused templating asset.
+- 613ad12960: Add a comment to the default backend about the fallback 404 handler.
+- 20af5a701f: The `<SearchType />` filter in the composed `SearchPage.tsx` was replaced with the `<SearchType.Accordion />` variant.
+
+  This is an entirely optional change; if you wish to display a control surface for search `types` as a single-select accordion (as opposed to the current multi-select of checkboxes), you can make the following (or similar) changes to your search page layout:
+
+  ```diff
+  --- a/packages/app/src/components/search/SearchPage.tsx
+  +++ b/packages/app/src/components/search/SearchPage.tsx
+  @@ -11,7 +11,7 @@ import {
+     SearchType,
+     DefaultResultListItem,
+   } from '@backstage/plugin-search';
+  -import { Content, Header, Page } from '@backstage/core-components';
+  +import { CatalogIcon, Content, DocsIcon, Header, Page } from '@backstage/core-components';
+
+   const useStyles = makeStyles((theme: Theme) => ({
+     bar: {
+  @@ -19,6 +19,7 @@ const useStyles = makeStyles((theme: Theme) => ({
+     },
+     filters: {
+       padding: theme.spacing(2),
+  +    marginTop: theme.spacing(2),
+     },
+     filter: {
+       '& + &': {
+  @@ -41,12 +42,23 @@ const SearchPage = () => {
+               </Paper>
+             </Grid>
+             <Grid item xs={3}>
+  +            <SearchType.Accordion
+  +              name="Result Type"
+  +              defaultValue="software-catalog"
+  +              types={[
+  +                {
+  +                  value: 'software-catalog',
+  +                  name: 'Software Catalog',
+  +                  icon: <CatalogIcon />,
+  +                },
+  +                {
+  +                  value: 'techdocs',
+  +                  name: 'Documentation',
+  +                  icon: <DocsIcon />,
+  +                },
+  +              ]}
+  +            />
+               <Paper className={classes.filters}>
+  -              <SearchType
+  -                values={['techdocs', 'software-catalog']}
+  -                name="type"
+  -                defaultValue="software-catalog"
+  -              />
+                 <SearchFilter.Select
+                   className={classes.filter}
+                   name="kind"
+  ```
+
+- 0dcd1dd64f: Add a `scheduler` to the plugin environment, which can schedule collaborative tasks across backends. To apply the same change in your backend, follow the steps below.
+
+  First install the package:
+
+  ```shell
+  # From the Backstage repository root
+  cd packages/backend
+  yarn add @backstage/backend-tasks
+  ```
+
+  Add the scheduler to your plugin environment type:
+
+  ```diff
+   // In packages/backend/src/types.ts
+  +import { PluginTaskScheduler } from '@backstage/backend-tasks';
+
+   export type PluginEnvironment = {
+  +  scheduler: PluginTaskScheduler;
+  ```
+
+  And finally make sure to add such an instance to each plugin's environment:
+
+  ```diff
+   // In packages/backend/src/index.ts
+  +import { TaskScheduler } from '@backstage/backend-tasks';
+
+   function makeCreateEnv(config: Config) {
+     // ...
+  +  const taskScheduler = TaskScheduler.fromConfig(config);
+
+     return (plugin: string): PluginEnvironment => {
+       // ...
+  +    const scheduler = taskScheduler.forPlugin(plugin);
+       return {
+  +      scheduler,
+         // ...
+  ```
+
+## 0.4.9
+
+### Patch Changes
+
+- 49a696d720: debounceTime prop is removed from the SearchBar component in the SearchPage as the default is set to 200. The prop is safe to remove and makes it easier to stay up to date with any changes in the future.
+- 5fdc8df0e8: The `index.html` template of the app has been updated to use the new `config` global provided by the Backstage CLI.
+
+  To apply this change to an existing app, make the following changes to `packages/app/public/index.html`:
+
+  ```diff
+  -    <title><%= app.title %></title>
+  +    <title><%= config.getString('app.title') %></title>
+  ```
+
+  ```diff
+  -    <% if (app.googleAnalyticsTrackingId && typeof app.googleAnalyticsTrackingId === 'string') { %>
+  +    <% if (config.has('app.googleAnalyticsTrackingId')) { %>
+       <script
+         async
+  -      src="https://www.googletagmanager.com/gtag/js?id=<%= app.googleAnalyticsTrackingId %>"
+  +      src="https://www.googletagmanager.com/gtag/js?id=<%= config.getString('app.googleAnalyticsTrackingId') %>"
+       ></script>
+  ```
+
+  ```diff
+  -      gtag('config', '<%= app.googleAnalyticsTrackingId %>');
+  +      gtag(
+  +        'config',
+  +        '<%= config.getString("app.googleAnalyticsTrackingId") %>',
+  +      );
+  ```
+
+## 0.4.8
+
+### Patch Changes
+
+- 25dfc2d483: Updated the root `package.json` to include files with `.cjs` and `.mjs` extensions in the `"lint-staged"` configuration.
+
+  To make this change to an existing app, apply the following changes to the `package.json` file:
+
+  ```diff
+   "lint-staged": {
+  -    "*.{js,jsx,ts,tsx}": [
+  +    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+  ```
+
+## 0.4.7
+
+### Patch Changes
+
+- 9603827bb5: Addressed some peer dependency warnings
+- 1bada775a9: TechDocs Backend may now (optionally) leverage a cache store to improve
+  performance when reading content from a cloud storage provider.
+
+  To apply this change to an existing app, pass the cache manager from the plugin
+  environment to the `createRouter` function in your backend:
+
+  ```diff
+  // packages/backend/src/plugins/techdocs.ts
+
+  export default async function createPlugin({
+    logger,
+    config,
+    discovery,
+    reader,
+  +  cache,
+  }: PluginEnvironment): Promise<Router> {
+
+    // ...
+
+    return await createRouter({
+      preparers,
+      generators,
+      publisher,
+      logger,
+      config,
+      discovery,
+  +    cache,
+    });
+  ```
+
+  If your `PluginEnvironment` does not include a cache manager, be sure you've
+  applied [the cache management change][cm-change] to your backend as well.
+
+  [Additional configuration][td-rec-arch] is required if you wish to enable
+  caching in TechDocs.
+
+  [cm-change]: https://github.com/backstage/backstage/blob/master/packages/create-app/CHANGELOG.md#patch-changes-6
+  [td-rec-arch]: https://backstage.io/docs/features/techdocs/architecture#recommended-deployment
+
+- 4862fbc64f: Bump @spotify/prettier-config
+- 36bb4fb2e9: Removed the `scaffolder.github.visibility` configuration that is no longer used from the default app template.
+
+## 0.4.6
+
+### Patch Changes
+
+- 24d2ce03f3: Search Modal now relies on the Search Context to access state and state setter. If you use the SidebarSearchModal as described in the [getting started documentation](https://backstage.io/docs/features/search/getting-started#using-the-search-modal), make sure to update your code with the SearchContextProvider.
+
+  ```diff
+  export const Root = ({ children }: PropsWithChildren<{}>) => (
+    <SidebarPage>
+      <Sidebar>
+        <SidebarLogo />
+  -     <SidebarSearchModal />
+  +     <SearchContextProvider>
+  +       <SidebarSearchModal />
+  +     </SearchContextProvider>
+        <SidebarDivider />
+      ...
+  ```
+
+- 905dd952ac: Incorporate usage of the tokenManager into the backend created using `create-app`.
+
+  In existing backends, update the `PluginEnvironment` to include a `tokenManager`:
+
+  ```diff
+  // packages/backend/src/types.ts
+
+  ...
+  import {
+    ...
+  + TokenManager,
+  } from '@backstage/backend-common';
+
+  export type PluginEnvironment = {
+    ...
+  + tokenManager: TokenManager;
+  };
+  ```
+
+  Then, create a `ServerTokenManager`. This can either be a `noop` that requires no secret and validates all requests by default, or one that uses a secret from your `app-config.yaml` to generate and validate tokens.
+
+  ```diff
+  // packages/backend/src/index.ts
+
+  ...
+  import {
+    ...
+  + ServerTokenManager,
+  } from '@backstage/backend-common';
+  ...
+
+  function makeCreateEnv(config: Config) {
+    ...
+    // CHOOSE ONE
+    // TokenManager not requiring a secret
+  + const tokenManager = ServerTokenManager.noop();
+    // OR TokenManager requiring a secret
+  + const tokenManager = ServerTokenManager.fromConfig(config);
+
+    ...
+    return (plugin: string): PluginEnvironment => {
+      ...
+  -   return { logger, cache, database, config, reader, discovery };
+  +   return { logger, cache, database, config, reader, discovery, tokenManager };
+    };
+  }
+  ```
+
+## 0.4.5
+
+### Patch Changes
+
+- dcaeaac174: Cleaned out the `peerDependencies` in the published version of the package, making it much quicker to run `npx @backstage/create-app` as it no longer needs to install a long list of unnecessary.
+- a5a5d7e1f1: DefaultTechDocsCollator is now included in the search backend, and the Search Page updated with the SearchType component that includes the techdocs type
+- bab752e2b3: Change default port of backend from 7000 to 7007.
+
+  This is due to the AirPlay Receiver process occupying port 7000 and preventing local Backstage instances on MacOS to start.
+
+  You can change the port back to 7000 or any other value by providing an `app-config.yaml` with the following values:
+
+  ```
+  backend:
+    listen: 0.0.0.0:7123
+    baseUrl: http://localhost:7123
+  ```
+
+  More information can be found here: https://backstage.io/docs/conf/writing
+
+- 42ebbc18c0: Bump gitbeaker to the latest version
+
+## 0.4.4
+
+### Patch Changes
+
+- 4ebc9fd277: Create backstage.json file
+
+  `@backstage/create-app` will create a new `backstage.json` file. At this point, the file will contain a `version` property, representing the version of `@backstage/create-app` used for creating the application. If the backstage's application has been bootstrapped using an older version of `@backstage/create-app`, the `backstage.json` file can be created and kept in sync, together with all the changes of the latest version of backstage, by running the following script:
+
+  ```bash
+  yarn backstage-cli versions:bump
+  ```
+
+- e21e3c6102: Bumping minimum requirements for `dockerode` and `testcontainers`
+- 014cbf8cb9: Migrated the app template use the new `@backstage/app-defaults` for the `createApp` import, since the `createApp` exported by `@backstage/app-core-api` will be removed in the future.
+
+  To migrate an existing application, add the latest version of `@backstage/app-defaults` as a dependency in `packages/app/package.json`, and make the following change to `packages/app/src/App.tsx`:
+
+  ```diff
+  -import { createApp, FlatRoutes } from '@backstage/core-app-api';
+  +import { createApp } from '@backstage/app-defaults';
+  +import { FlatRoutes } from '@backstage/core-app-api';
+  ```
+
+- 2163e83fa2: Refactor and add regression tests for create-app tasks
+- Updated dependencies
+  - @backstage/cli-common@0.1.6
+
 ## 0.4.3
 
 ### Patch Changes

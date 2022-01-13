@@ -16,5 +16,5 @@
 
 export { deserializeError, serializeError, stringifyError } from './error';
 export type { SerializedError } from './error';
-export { parseErrorResponse } from './response';
-export type { ErrorResponse } from './response';
+export { parseErrorResponseBody } from './response';
+export type { ErrorResponseBody } from './response';

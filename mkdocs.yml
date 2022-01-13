@@ -64,6 +64,7 @@ nav:
       - Backstage Search:
           - Overview: 'features/search/README.md'
           - Getting Started: 'features/search/getting-started.md'
+          - Getting Started, configuring Backstage: 'features/search/configuration.md'
           - Concepts: 'features/search/concepts.md'
           - Search Architecture: 'features/search/architecture.md'
           - Search Engines: 'features/search/search-engines.md'
@@ -88,6 +89,7 @@ nav:
           - Discovery: 'integrations/aws-s3/discovery.md'
       - Azure:
           - Locations: 'integrations/azure/locations.md'
+          - Discovery: 'integrations/azure/discovery.md'
           - Org Data: 'integrations/azure/org.md'
       - Bitbucket:
           - Locations: 'integrations/bitbucket/locations.md'
@@ -124,7 +126,6 @@ nav:
       - Testing:
           - Testing with Jest: 'plugins/testing.md'
       - Publishing:
-          - Publishing: 'plugins/publishing.md'
           - Publish private: 'plugins/publish-private.md'
           - Add to Marketplace: 'plugins/add-to-marketplace.md'
           - Observability: 'plugins/observability.md'
@@ -184,6 +185,8 @@ nav:
       - ADR009 - Entity References: 'architecture-decisions/adr009-entity-references.md'
       - ADR010 - Luxon Date Library: 'architecture-decisions/adr010-luxon-date-library.md'
       - ADR011 - Plugin Package Structure: 'architecture-decisions/adr011-plugin-package-structure.md'
+      - ADR012 - Plugin Package Structure: 'architecture-decisions/adr012-use-luxon-locale-and-date-presets.md'
+      - ADR013 - Plugin Package Structure: 'architecture-decisions/adr013-use-node-fetch.md'
   - Support:
       - Backstage Project Structure: 'support/project-structure.md'
   - Glossary: glossary.md
